@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 @author:白恒aead
-@file: ${NAME}.py
-@time:$DATE
 """
 from cgitb import text
 from concurrent.futures import thread
