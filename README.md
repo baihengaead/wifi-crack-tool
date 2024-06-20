@@ -34,9 +34,8 @@ Windows 10
    pip install pyinstaller
    ```
 3. 编译 WifiCrackTool.py
-
-					```cmd
-					python -u WifiCrackTool.py
+   ```cmd
+   python -u WifiCrackTool.py
    ```
 4. 打包 WifiCrackTool.py
 
