@@ -23,7 +23,7 @@ Windows 10
 
 非 Windows 10 系统请自行下载源码编译
 
-## 编译方法
+## 编译及打包方法
 
 1. 下载 Python 3.6.5 并安装
 
@@ -33,8 +33,12 @@ Windows 10
    pip install pywifi
    pip install pyinstaller
    ```
-
 3. 编译 WifiCrackTool.py
+
+				```cmd
+   python -u WifiCrackTool.py
+   ```
+4. 打包 WifiCrackTool.py
 
    ```cmd
    pyinstaller -F -w WifiCrackTool.py
