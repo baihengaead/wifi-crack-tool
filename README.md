@@ -11,7 +11,7 @@ WiFiCrackTool是一款基于Python开发的拥有图形界面的WiFi密码暴力
 
 Windows 10
 
-Python 3.6.5
+Python ≥3.6.5
 
 ## 核心模块
 
