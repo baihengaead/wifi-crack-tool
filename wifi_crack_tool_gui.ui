@@ -36,7 +36,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>wificrack.ico</normaloff>wificrack.ico</iconset>
+    <normaloff>images/wificrack.ico</normaloff>images/wificrack.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">

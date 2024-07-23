@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         MainWindow.setMinimumSize(QSize(500, 500))
         MainWindow.setMaximumSize(QSize(500, 500))
         icon = QIcon()
-        icon.addFile(u"wificrack.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u"images/wificrack.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")

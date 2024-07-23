@@ -12,8 +12,7 @@ from pywifi.iface import Interface
 
 import pyperclip
 
-from tkinter import messagebox as msg
-from PySide6.QtCore import Qt, QThread, Signal, QThreadPool, QRunnable, Slot
+from PySide6.QtCore import Qt, QThread, Signal, QThreadPool, QRunnable, Slot, QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QMessageBox
 from PySide6.QtGui import QIcon
 from wifi_crack_tool_gui import Ui_MainWindow
@@ -37,6 +36,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        self.icon_path = ""
+        if getattr(sys, 'frozen', False):
+            self.icon_path = os.path.join(sys._MEIPASS, "images/wificrack.ico") # type: ignore
+        else:
+            self.icon_path = "images/wificrack.ico"
+        
+        icon = QIcon()
+        icon.addFile(self.icon_path, QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.setWindowIcon(icon)
         
         #------------------------- 初始化控件状态 -------------------------------#
         self.ui.cbo_security_type.addItems(['WPA','WPAPSK','WPA2','WPA2PSK','UNKNOWN'])
@@ -91,7 +100,7 @@ class MainWindow(QMainWindow):
         msg_box = QMessageBox()
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
-        msg_box.setWindowIcon(QIcon('wificrack.ico'))
+        msg_box.setWindowIcon(QIcon(self.icon_path))
         msg_box.setIcon(QMessageBox.Icon.Information)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         # 设置窗口标志，使其始终置顶
@@ -110,7 +119,7 @@ class MainWindow(QMainWindow):
         msg_box = QMessageBox(self.ui.centralwidget)
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
-        msg_box.setWindowIcon(QIcon('wificrack.ico'))
+        msg_box.setWindowIcon(QIcon(self.icon_path))
         msg_box.setIcon(QMessageBox.Icon.Warning)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         # 设置窗口标志，使其始终置顶
@@ -129,7 +138,7 @@ class MainWindow(QMainWindow):
         msg_box = QMessageBox(self.ui.centralwidget)
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
-        msg_box.setWindowIcon(QIcon('wificrack.ico'))
+        msg_box.setWindowIcon(QIcon(self.icon_path))
         msg_box.setIcon(QMessageBox.Icon.Critical)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         # 设置窗口标志，使其始终置顶
@@ -539,15 +548,16 @@ class WifiCrackTool:
 
 
 if __name__ == "__main__":
-    if pywifi.PyWiFi().interfaces().__len__() <= 1:
-        mutex = acquire_mutex()
-        if mutex is None:
-            msg.showinfo(title='WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.1', message='应用程序的另一个实例已经在运行。')
-            sys.exit()
-
     try:
         app = QApplication(sys.argv)
         window = MainWindow()
+        
+        if pywifi.PyWiFi().interfaces().__len__() <= 1:
+            mutex = acquire_mutex()
+            if mutex is None:
+                window.showinfo(title='WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.1', message='应用程序的另一个实例已经在运行。')
+                sys.exit()
+        
         window.show()
         app.exec()
         with open(window.tool.config_file_path, 'w',encoding='utf-8') as config_file:
