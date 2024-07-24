@@ -5,7 +5,7 @@
 
 ## 项目介绍
 
-wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，项目遵循MIT协议，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
+wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
 
 ## 如何使用
 
@@ -15,7 +15,7 @@ wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴�
 
 接下来正常使用就可以啦。
 
-#### 多开并行
+#### 多开并发
 
 ##### 要求
 
@@ -72,7 +72,6 @@ password3
         "ssid":"wifi_3",
         "pwd":"password3"
     },
-    // ...
 ]
 ```
 
@@ -96,11 +95,11 @@ pywifi、pyside6
 
 Windows 10
 
-Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试）
+Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试，可自行尝试构建）
 
 ## 如何修改GUI
 
-1. [下载 Python 3.11.9]([Python Release Python 3.11.9 | Python.org](https://www.python.org/downloads/release/python-3119/)) 并安装
+1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
 
 2. 安装所需模块
    ```cmd
@@ -120,7 +119,7 @@ Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试�
 
 ## 如何运行以及打包
 
-1. [下载 Python 3.11.9]([Python Release Python 3.11.9 | Python.org](https://www.python.org/downloads/release/python-3119/)) 并安装
+1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
 
 2. 安装所需模块
 
