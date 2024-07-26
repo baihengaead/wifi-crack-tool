@@ -1,11 +1,14 @@
 # WiFi暴力破解工具
 
 ## 免责声明
+
 **本项目所涉及的技术、思路和工具仅供学习交流，任何人不得将其用于非法用途和盈利，不得将其用于非授权渗透测试，否则后果自行承担，与本项目无关。使用本项目前请先阅读[法律法规](https://github.com/baihengaead/Awesome-Laws)。**
 
 ## 项目介绍
 
 wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，项目遵循MIT协议，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
+
+支持 WPA、WPAPSK、WPA2、WPA2PSK 安全协议
 
 ## 如何使用
 
@@ -25,7 +28,7 @@ wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴�
 
 以有2个无线网卡为例
 
-1. 打开2次`wifi_crack_tool.exe`或者`python wifi_crack_tool.py`
+1. 打开2次 `wifi_crack_tool.exe`或者 `python wifi_crack_tool.py`
 2. 选择不同的无线网卡
 3. 扫描WiFi
 4. 选择需要破解的WiFi
@@ -101,45 +104,37 @@ Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试�
 ## 如何修改GUI
 
 1. [下载 Python 3.11.9]([Python Release Python 3.11.9 | Python.org](https://www.python.org/downloads/release/python-3119/)) 并安装
-
 2. 安装所需模块
+
    ```cmd
    pip install -r requirements.txt
    ```
-
 3. 启动QT Designer pyside6-designer
 
    ```cmd
    pyside6-designer
    ```
-
 4. 在QT Designer中打开wifi_crack_tool_gui.ui
-
 5. 使用设计器对UI进行调整
-
 
 ## 如何运行以及打包
 
 1. [下载 Python 3.11.9]([Python Release Python 3.11.9 | Python.org](https://www.python.org/downloads/release/python-3119/)) 并安装
-
 2. 安装所需模块
 
    ```cmd
    pip install -r requirements.txt
    ```
-
 3. 编译 wifi_crack_tool_gui.ui
 
    ```cmd
    pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
    ```
-
 4. 编译运行 wifi_crack_tool.py
 
    ```cmd
    python -u wifi_crack_tool.py
    ```
-
 5. 打包 wifi_crack_tool.py
 
    ```cmd
@@ -147,6 +142,10 @@ Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试�
    ```
 
 ## 更新日志
+
+### v1.1.1
+
+- **[修复]** 部分已知问题。
 
 ### v1.1
 
