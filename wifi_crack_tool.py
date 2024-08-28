@@ -2,7 +2,7 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.0
+Version: 1.2.1
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
