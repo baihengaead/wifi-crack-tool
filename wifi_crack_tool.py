@@ -5,8 +5,7 @@ Repositories: https://github.com/baihengaead/wifi-crack-tool
 Version: 1.2.0
 """
 import os,sys,datetime,time,threading,ctypes,json
-from typing import Any
-import win32api,win32security,win32event # type: ignore
+import platform
 
 import pywifi
 from pywifi import const
@@ -32,7 +31,7 @@ class MainWindow(QMainWindow):
             self.icon_path = "images/wificrack.ico"
         
         if mutex is None:
-            self.showinfo(title='WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.2.0', message='应用程序的另一个实例已经在运行。')
+            self.showinfo(title='WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.2.1', message='应用程序的另一个实例已经在运行。')
             sys.exit()
         
         icon = QIcon()
@@ -201,7 +200,7 @@ class WifiCrackTool:
             os.mkdir(self.dict_dir_path)
 
         self.config_file_path = self.config_dir_path+'/settings.json'
-        self.config_settings_data:dict[str,Any] = {
+        self.config_settings_data = {
             'scan_time':8,
             'connect_time':3,
             'pwd_txt_path':'passwords.txt'
@@ -584,29 +583,63 @@ class WifiCrackTool:
                 return False
 
 if __name__ == "__main__":
-    
-    #------------------- 互斥锁 -----------------------#
-    MUTEX_NAME = "Global/wifi_crack_tool_mutex"
-
-    def acquire_mutex():
-        sa = win32security.SECURITY_ATTRIBUTES()
-        sa.bInheritHandle = False  # 确保互斥量句柄不会被继承
-        mutex = win32event.CreateMutex(sa, False, MUTEX_NAME)
-        last_error = win32api.GetLastError()
-        if last_error == 183:
-            return None
-        elif last_error != 0:
-            raise ctypes.WinError(last_error)
-        return mutex
-    #==================================================#
-    
     try:
-        mutex = None
-        if pywifi.PyWiFi().interfaces().__len__() <= 1:
-            mutex = acquire_mutex()
-            
         app = QApplication(sys.argv)
-        window = MainWindow(mutex)
+        
+        system = platform.system()
+        if system == 'Windows':
+            print('当前系统是 Windows')
+            import win32api,win32security,win32event # type: ignore
+            #------------------- 互斥锁 -----------------------#
+            MUTEX_NAME = "Global/wifi_crack_tool_mutex"
+            def acquire_mutex():
+                sa = win32security.SECURITY_ATTRIBUTES()
+                sa.bInheritHandle = False  # 确保互斥量句柄不会被继承
+                mutex = win32event.CreateMutex(sa, False, MUTEX_NAME)
+                last_error = win32api.GetLastError()
+                if last_error == 183:
+                    return None
+                elif last_error != 0:
+                    raise ctypes.WinError(last_error)
+                return mutex
+            #==================================================#
+            
+            __mutex = None
+            if pywifi.PyWiFi().interfaces().__len__() <= 1:
+                __mutex = acquire_mutex()
+            
+            window = MainWindow(__mutex)
+            
+        elif system == 'Linux':
+            print('当前系统是 Linux')
+            import fcntl
+            #------------------- 互斥锁 -----------------------#
+            LOCKFILE = "/tmp/wifi_crack_tool.lock"
+            def acquire_lock():
+                lock = os.open(LOCKFILE, os.O_RDWR | os.O_CREAT)
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB) # type: ignore
+                    return lock
+                except IOError:
+                    return None
+
+            def release_lock(lock):
+                fcntl.flock(lock, fcntl.LOCK_UN) # type: ignore
+                os.close(lock)
+                os.remove(LOCKFILE)
+            #==================================================#
+                        
+            __lock = None
+            if pywifi.PyWiFi().interfaces().__len__() <= 1:
+                __lock = acquire_lock()
+                
+            window = MainWindow(__lock)
+            
+        elif system == 'Darwin':  # macOS
+            print('当前系统是 macOS')
+        else:
+            print(f'当前系统是 {system}')
+            
         window.show()
         app.exec()
         
@@ -617,6 +650,9 @@ if __name__ == "__main__":
             
         sys.exit()
     finally:
-        if 'mutex' in vars():
-            if mutex is not None:
-                win32api.CloseHandle(mutex)
+        if '__mutex' in vars():
+            if __mutex is not None:
+                win32api.CloseHandle(__mutex)
+        elif '__lock' in vars():
+            if __lock is not None:
+                release_lock(__lock)

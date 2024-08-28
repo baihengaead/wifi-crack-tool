@@ -1,7 +1,6 @@
-pywin32>=306
 pywifi>=1.1.12
-pyperclip>=1.9.0
 PySide6>=6.7.2
-pyinstaller>=6.9.0
+pyperclip>=1.9.0
 comtypes>=1.4.4
-typing
+pyinstaller>=6.9.0
+pywin32>=306

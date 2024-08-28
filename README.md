@@ -6,7 +6,7 @@
 
 ## 项目介绍
 
-wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
+wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
 
 支持 WPA、WPAPSK、WPA2、WPA2PSK 安全协议
 
@@ -131,9 +131,11 @@ pywifi、pyside6
 
 ## 系统要求
 
-Windows 10
+- Windows 10 及以上 
+- Ubuntu 22.04 及以上版本
+- 其它支持 Python 3.11.x 以上的Linux系统
 
-Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试，可自行尝试构建）
+Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自行尝试构建）
 
 ## 如何修改GUI
 
@@ -152,6 +154,8 @@ Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试�
 5. 使用设计器对UI进行调整
 
 ## 如何运行以及打包
+
+### Windows
 
 1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
 2. 安装所需模块
@@ -172,10 +176,71 @@ Tips：理论支持Win10、Win11、Linux、MacOS（Linux 与 macOS 暂未测试�
 5. 打包 wifi_crack_tool.py
 
    ```cmd
-   pyinstaller -F -w WifiCrackTool.py
+   pyinstaller -F -w wifi_crack_tool.py
+   ```
+
+### Linux（以 Ubuntu 24.04 为例）
+
+1. 更新软件包
+
+   ```shell
+   sudo apt update
+   sudo apt upgrade
+   ```
+
+2. 安装QT GUI依赖库
+
+   ```shell
+   sudo apt install libxcb-cursor0
+   ```
+
+3. 安装python3虚拟环境库
+
+   ```shell
+   sudo apt install python3-venv
+   ```
+
+4. 创建python3虚拟环境
+
+   ```shell
+   python3 -m venv wifi-crack-tool-venv
+   ```
+
+5. 激活python3虚拟环境
+
+   ```shell
+   source wifi-crack-tool-venv/bin/activate
+   ```
+
+6. 安装所需模块（Linux需要将 requirements.txt 中的 `pywin32>=306` 删除）
+
+   ```shell
+   pip3 install -r requirements.txt
+   ```
+
+7. 编译 wifi_crack_tool_gui.ui
+
+   ```shell
+   pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
+   ```
+
+8. 编译运行 wifi_crack_tool.py
+
+   ```shell
+   python3 -u wifi_crack_tool.py
+   ```
+
+9. 打包 wifi_crack_tool.py
+
+   ```shell
+   pyinstaller -F -w wifi_crack_tool.py
    ```
 
 ## 更新日志
+
+### v1.2.1
+
+- **[优化]** 对Linux平台支持。
 
 ### v1.2.0
 
