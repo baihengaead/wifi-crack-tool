@@ -158,21 +158,25 @@ Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自�
 ### Windows
 
 1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
+
 2. 安装所需模块
 
    ```cmd
    pip install -r requirements.txt
    ```
+
 3. 编译 wifi_crack_tool_gui.ui
 
    ```cmd
    pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
    ```
+
 4. 编译运行 wifi_crack_tool.py
 
    ```cmd
    python -u wifi_crack_tool.py
    ```
+
 5. 打包 wifi_crack_tool.py
 
    ```cmd
@@ -188,10 +192,11 @@ Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自�
    sudo apt upgrade
    ```
 
-2. 安装QT GUI依赖库
+2. 安装QT GUI依赖库 以及 剪切板依赖库
 
    ```shell
    sudo apt install libxcb-cursor0
+   sudo apt install xclip
    ```
 
 3. 安装python3虚拟环境库
@@ -237,6 +242,12 @@ Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自�
    ```
 
 ## 更新日志
+
+### v1.2.2
+
+- **[修复]** 在多网卡的情况下意外的提示了 “应用程序的另一个实例已经在运行。” 的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
+- **[修复]** 在部分情况下，进行utf-8编码转换时，出现转换异常的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
+- **[修复]** 在破解中文WiFi后，连接的中文WiFi名称乱码的问题。
 
 ### v1.2.1
 

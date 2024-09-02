@@ -2,7 +2,7 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.1
+Version: 1.2.2
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
@@ -30,8 +30,8 @@ class MainWindow(QMainWindow):
         else:
             self.icon_path = "images/wificrack.ico"
         
-        if mutex is None:
-            self.showinfo(title='WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.2.1', message='应用程序的另一个实例已经在运行。')
+        if pywifi.PyWiFi().interfaces().__len__() <= 1 and  mutex is None:
+            self.showinfo(title=self.windowTitle(), message='应用程序的另一个实例已经在运行。')
             sys.exit()
         
         icon = QIcon()
@@ -185,7 +185,7 @@ class WifiCrackTool:
         self.ui = win.ui
         
         self.config_dir_path = os.getcwd()+"/config" #配置文件目录路径
-        # 如果不存在log目录，则创建
+        # 如果不存在config目录，则创建
         if not os.path.exists(self.config_dir_path):
             os.mkdir(self.config_dir_path)
 
@@ -195,7 +195,7 @@ class WifiCrackTool:
             os.mkdir(self.log_dir_path)
         
         self.dict_dir_path = os.getcwd()+"/dict" #字典目录路径
-        # 如果不存在log目录，则创建
+        # 如果不存在dict目录，则创建
         if not os.path.exists(self.dict_dir_path):
             os.mkdir(self.dict_dir_path)
 
@@ -377,8 +377,17 @@ class WifiCrackTool:
             self.iface:Interface
             self.get_wnic()
             self.ssids = []
+            self.convert_success = False
             self.is_auto = False
 
+        def coding_convert(self,content:str,encoding:str='utf-8'):
+            try:
+                return content.encode('raw_unicode_escape').decode(encoding)
+            except Exception as r:
+                self.win.show_msg.send(f"编码转换时发生错误 {r}\n\n","red")
+                self.win.reset_controls_state.send()
+                return False
+        
         def get_wnic(self):
             '''获取无线网卡'''
             try:
@@ -419,7 +428,7 @@ class WifiCrackTool:
                 self.win.show_msg.send("扫描完成！\n","black")
                 self.ssids = []
                 for i,data in enumerate(ap_list):#输出扫描到的WiFi名称
-                    ssid = data.ssid.encode('raw_unicode_escape').decode('utf-8')
+                    ssid = data.ssid#self.coding_convert(data.ssid,'utf-8')
                     self.ssids.insert(i,ssid)
                 self.win.reset_controls_state.send()
                 self.win.add_wifi_items.send(self.ssids)
@@ -551,7 +560,7 @@ class WifiCrackTool:
                 elif akm=='UNKNOWN':
                     akm_v = 5
                 profile = pywifi.Profile()  #创建wifi配置对象
-                profile.ssid = ssid.encode('utf-8').decode('gb18030') #Wifi SSID 解码为gb18030
+                profile.ssid = ssid#.encode('utf-8').decode('gb18030') #Wifi SSID 解码为gb18030
                 profile.key = pwd   # type: ignore #WiFi密码
                 profile.auth = const.AUTH_ALG_OPEN  #网卡的开放
                 profile.akm.append(akm_v)  #wifi加密算法，一般是 WPA2PSK
