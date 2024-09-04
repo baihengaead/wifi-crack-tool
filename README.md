@@ -8,7 +8,7 @@
 
 wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi密码暴力破解工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
 
-支持 WPA、WPAPSK、WPA2、WPA2PSK 安全协议
+支持 WPA、WPAPSK、WPA2、WPA2PSK、WPA3、WPA3SAE 安全协议
 
 ## 如何使用
 
@@ -132,8 +132,8 @@ pywifi、pyside6
 ## 系统要求
 
 - Windows 10 及以上 
-- Ubuntu 22.04 及以上版本
-- 其它支持 Python 3.11.x 以上的Linux系统
+- Ubuntu 22.04 及以上版本**（实验性）**
+- 其它支持 Python 3.11.x 以上的Linux系统**（实验性）**
 
 Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自行尝试构建）
 
@@ -242,6 +242,12 @@ Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自�
    ```
 
 ## 更新日志
+
+### v1.2.3
+
+- **[新增]** 对WPA3的支持（Windows）。
+- **[新增]** 自动获取安全类型的功能（Windows）。
+- **[优化]** SSID的utf-8编码转换（Windows）。
 
 ### v1.2.2
 
