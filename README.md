@@ -132,10 +132,10 @@ pywifi、pyside6
 ## 系统要求
 
 - Windows 10 及以上 
-- Ubuntu 22.04 及以上版本**（实验性）**
-- 其它支持 Python 3.11.x 以上的Linux系统**（实验性）**
+- Ubuntu 22.04 及以上版本 **（实验性）**
+- 其它支持 Python 3.11.x 以上的Linux系统 **（实验性）**
 
-Tips：理论支持Win10、Win11、Linux、MacOS（MacOS 暂未测试，可自行尝试构建）
+Tips：支持Win10、Win11、Linux，MacOS暂不支持
 
 ## 如何修改GUI
 
