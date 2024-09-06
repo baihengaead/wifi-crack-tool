@@ -2,12 +2,12 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.3
+Version: 1.2.4
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
 
-from pywifi import const,PyWiFi,_wifiutil_win,Profile
+from pywifi import const,PyWiFi,Profile
 from pywifi.iface import Interface
 
 import pyperclip
@@ -252,7 +252,7 @@ class WifiCrackTool:
 
         try:
             default_dir = r"."
-            temp_file_path,_ = QFileDialog.getOpenFileName(self.win, caption=u'选择密码本', dir=(os.path.expanduser(default_dir)), filter="Text files (*.txt);;JSON files (*.json)")
+            temp_file_path,_ = QFileDialog.getOpenFileName(self.win, caption=u'选择密码本', dir=(os.path.expanduser(default_dir)), filter="Text files (*.txt)")#;;JSON files (*.json)")
             temp_filepaths = temp_file_path.split('/')
             temp_filename = temp_filepaths[len(temp_filepaths)-1]
             temp_filenames = temp_filename.split('.')
@@ -260,8 +260,8 @@ class WifiCrackTool:
             if(temp_filetype==''):
                 self.win.showinfo(title='提示',message='未选择密码本')
                 self.pwd_file_changed = False
-            elif(temp_filetype not in ['txt','json']):
-                self.win.showerror(title='选择密码本',message='密码本类型错误！\n目前仅支持格式为[txt]的密码本和[json]的密码字典\n您选择的密码本格式为['+temp_filetype+']')
+            elif(temp_filetype not in ['txt']):#,'json']):
+                self.win.showerror(title='选择密码本',message='密码本类型错误！\n目前仅支持格式为[txt]的密码本\n您选择的密码本格式为['+temp_filetype+']')
                 self.pwd_file_changed = False
             else:
                 self.config_settings_data['pwd_txt_path'] = temp_file_path
@@ -558,7 +558,12 @@ class WifiCrackTool:
                 akm = self.ui.cbo_security_type.currentText()
                 akm_i = self.ui.cbo_security_type.currentIndex()
                 akm_v = 4
-                akm_dict = _wifiutil_win.akm_str_to_value_dict
+                if platform.system() == "Windows":
+                    from pywifi import _wifiutil_win
+                    akm_dict = _wifiutil_win.akm_str_to_value_dict
+                elif platform.system() == "Linux":
+                    from pywifi import _wifiutil_linux
+                    akm_dict = _wifiutil_linux.display_str_to_key
                 if akm in akm_dict:
                     akm_v = akm_dict[akm]
                 else:
@@ -654,9 +659,11 @@ if __name__ == "__main__":
             window = MainWindow(__lock)
             
         elif system == 'Darwin':  # macOS
-            print('当前系统是 macOS')
+            print('当前系统是 macOS, 暂不支持')
+            sys.exit()
         else:
-            print(f'当前系统是 {system}')
+            print(f'当前系统为 {system}, 暂不支持')
+            sys.exit()
             
         window.show()
         app.exec()
