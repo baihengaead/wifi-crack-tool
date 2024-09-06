@@ -243,6 +243,10 @@ Tips：支持Win10、Win11、Linux，MacOS暂不支持
 
 ## 更新日志
 
+### v1.2.4
+
+- **[新增]** 对WPA3的支持（Linux）。
+
 ### v1.2.3
 
 - **[新增]** 对WPA3的支持（Windows）。
