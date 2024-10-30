@@ -243,21 +243,27 @@ Tips：支持Win10、Win11、Linux，MacOS暂不支持
 
 ## 更新日志
 
+### v1.2.5
+
+- **[新增]** 支持在破解过程中**暂停**。([#26](https://github.com/baihengaead/wifi-crack-tool/issues/26))
+- **[修复]** 在设备的**WLAN功能关闭**时，**扫描WiFi会抛出意外错误**的问题。([#28](https://github.com/baihengaead/wifi-crack-tool/issues/28))
+- **[修复]** 在自动破解全部WiFi的情况下，连接完成一个WiFi后，所有**按钮的状态会被重置**的问题。
+
 ### v1.2.4
 
-- **[新增]** 对WPA3的支持（Linux）。
+- **[新增]** 对**WPA3**的支持（Linux）。
 
 ### v1.2.3
 
-- **[新增]** 对WPA3的支持（Windows）。
-- **[新增]** 自动获取安全类型的功能（Windows）。
-- **[优化]** SSID的utf-8编码转换（Windows）。
+- **[新增]** 对**WPA3**的支持（Windows）。
+- **[新增]** **自动获取**安全类型的功能（Windows）。
+- **[优化]** SSID的utf-8**编码转换**（Windows）。
 
 ### v1.2.2
 
-- **[修复]** 在多网卡的情况下意外的提示了 “应用程序的另一个实例已经在运行。” 的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
-- **[修复]** 在部分情况下，进行utf-8编码转换时，出现转换异常的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
-- **[修复]** 在破解中文WiFi后，连接的中文WiFi名称乱码的问题。
+- **[修复]** 在多网卡的情况下**意外的提示**了 “应用程序的另一个实例已经在运行。” 的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
+- **[修复]** 在部分情况下，进行utf-8**编码转换**时，出现转换**异常**的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
+- **[修复]** 在破解中文WiFi后，连接的**中文WiFi名称乱码**的问题。
 
 ### v1.2.1
 

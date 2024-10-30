@@ -2,7 +2,7 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.4
+Version: 1.2.5
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
             self.icon_path = "images/wificrack.ico"
         
         if PyWiFi().interfaces().__len__() <= 1 and  mutex is None:
-            self.showinfo(title=self.windowTitle(), message='应用程序的另一个实例已经在运行。')
+            self.showinfo(title=self.windowTitle(), message='应用程序的另一个实例已经在运行。\n(p.s.你当前的设备只有一个网卡，不支持多开！)')
             sys.exit()
         
         icon = QIcon()
@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         self.ui.cbo_wnic.setDisabled(True)
         self.ui.btn_refresh_wifi.setDisabled(True)
         self.ui.btn_start.setDisabled(True)
+        self.ui.btn_pause_or_resume.setDisabled(True)
         self.ui.btn_stop.setDisabled(True)
         
         self.ui.txt_log_msg_info.setReadOnly(True)
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
         self.ui.btn_change_pwd_file.clicked.connect(self.tool.change_pwd_file)
         self.ui.btn_refresh_wifi.clicked.connect(self.tool.refresh_wifi)
         self.ui.btn_start.clicked.connect(self.tool.start)
+        self.ui.btn_pause_or_resume.clicked.connect(self.tool.pause)
         self.ui.btn_stop.clicked.connect(self.tool.stop)
         self.ui.dbl_scan_time.valueChanged.connect(self.tool.change_scan_time)
         self.ui.dbl_connect_time.valueChanged.connect(self.tool.change_connect_time)
@@ -223,7 +225,10 @@ class WifiCrackTool:
             # 读取密码字典数据
             with open(self.pwd_dict_path, 'r',encoding='utf-8') as json_file:
                 self.pwd_dict_data = json.load(json_file)
-
+        
+        self.crack_pause_condition = threading.Condition()
+        self.paused = False
+        
         self.run = False
         self.pwd_file_changed = False
         
@@ -290,15 +295,23 @@ class WifiCrackTool:
     # 重置所有控件状态
     def reset_controls_state(self):
         '''重置状态'''
-        self.ui.cbo_wifi_name.setEnabled(True)
-        self.ui.cbo_security_type.setEnabled(True)
-        self.ui.cbo_wnic.setEnabled(True)
-        self.ui.dbl_scan_time.setEnabled(True)
-        self.ui.dbl_connect_time.setEnabled(True)
-        self.ui.btn_change_pwd_file.setEnabled(True)
-        self.ui.btn_refresh_wifi.setEnabled(True)
-        self.ui.btn_start.setEnabled(True)
-        self.ui.btn_stop.setDisabled(True)
+        try:
+            self.ui.cbo_wifi_name.setEnabled(True)
+            self.ui.cbo_security_type.setEnabled(True)
+            self.ui.cbo_wnic.setEnabled(True)
+            self.ui.dbl_scan_time.setEnabled(True)
+            self.ui.dbl_connect_time.setEnabled(True)
+            self.ui.btn_change_pwd_file.setEnabled(True)
+            self.ui.btn_refresh_wifi.setEnabled(True)
+            self.ui.btn_start.setEnabled(True)
+            self.ui.btn_pause_or_resume.setDisabled(True)
+            self.ui.btn_stop.setDisabled(True)
+            self.ui.btn_pause_or_resume.setText("暂停")
+            with self.crack_pause_condition:
+                self.paused = False
+                self.crack_pause_condition.notify_all()
+        except Exception as r:
+            pass 
     
     # 设置所有控件为运行时的状态
     def set_controls_running_state(self):
@@ -311,6 +324,21 @@ class WifiCrackTool:
         self.ui.btn_change_pwd_file.setDisabled(True)
         self.ui.btn_refresh_wifi.setDisabled(True)
         self.ui.btn_start.setDisabled(True)
+        self.ui.btn_pause_or_resume.setEnabled(True)
+        self.ui.btn_stop.setEnabled(True)
+    
+    # 设置所有控件为暂停时的状态
+    def set_controls_pausing_state(self):
+        '''暂停状态'''
+        self.ui.cbo_wifi_name.setDisabled(True)
+        self.ui.cbo_security_type.setDisabled(True)
+        self.ui.cbo_wnic.setDisabled(True)
+        self.ui.dbl_scan_time.setDisabled(True)
+        self.ui.dbl_connect_time.setDisabled(True)
+        self.ui.btn_change_pwd_file.setDisabled(True)
+        self.ui.btn_refresh_wifi.setDisabled(True)
+        self.ui.btn_start.setDisabled(True)
+        self.ui.btn_pause_or_resume.setEnabled(True)
         self.ui.btn_stop.setEnabled(True)
     
     # 刷新wifi列表
@@ -328,10 +356,10 @@ class WifiCrackTool:
             thread.start()
         except Exception as r:
             self.win.showerror(title='错误警告',message='扫描wifi时发生未知错误 %s' %(r))
-            self.show_msg('扫描wifi时发生未知错误 %s\n\n' %(r),"red")
+            self.show_msg('[错误]扫描wifi时发生未知错误 %s\n\n' %(r),"red")
             self.reset_controls_state()
 
-    # 开始暴力破解
+    # 开始破解
     def start(self):
         try:
             if self.config_settings_data['pwd_txt_path']!="" and os.path.exists(self.config_settings_data['pwd_txt_path']):
@@ -351,17 +379,39 @@ class WifiCrackTool:
                     self.start()
         except Exception as r:
             self.win.showerror(title='错误警告',message='开始运行时发生未知错误 %s' %(r))
-            self.show_msg('开始运行时发生未知错误 %s\n\n' %(r),"red")
+            self.show_msg('[错误]开始运行时发生未知错误 %s\n\n' %(r),"red")
             self.reset_controls_state()
 
-    # 终止暴力破解
+    # 暂停破解
+    def pause(self):
+        try:
+            with self.crack_pause_condition:
+                if self.paused:
+                    self.paused = False
+                    self.ui.btn_pause_or_resume.setText("暂停")
+                    self.show_msg("开始继续破解...")
+                    self.crack_pause_condition.notify_all()
+                else:
+                    self.paused = True
+                    self.ui.btn_pause_or_resume.setText("继续")
+                    self.show_msg("正在尝试暂停破解...")
+                    self.crack_pause_condition.notify_all()
+        except Exception as r:
+            self.win.showerror(title='错误警告',message='暂停过程中发生未知错误 %s' %(r))
+            self.show_msg('[错误]暂停过程中发生未知错误 %s\n\n' %(r),"red")
+            self.reset_controls_state()
+    
+    # 终止破解
     def stop(self):
         try:
             self.run = False
             self.show_msg("正在尝试终止破解...")
+            with self.crack_pause_condition:
+                self.paused = False
+                self.crack_pause_condition.notify_all()
         except Exception as r:
-            self.win.showerror(title='错误警告',message='停止时发生未知错误 %s' %(r))
-            self.show_msg('停止时发生未知错误 %s\n\n' %(r),"red")
+            self.win.showerror(title='错误警告',message='停止过程中发生未知错误 %s' %(r))
+            self.show_msg('[错误]停止过程中发生未知错误 %s\n\n' %(r),"red")
             self.reset_controls_state()
 
     # 暴力破解wifi密码的类
@@ -374,22 +424,14 @@ class WifiCrackTool:
             self.wifi = PyWiFi()
             self.wnics = self.wifi.interfaces()
             self.iface:Interface
-            self.get_wnic()
+            self.__get_wnic()
             self.ssids = []
             self.profile_dict = {}
             '''wifi信息字典'''
             self.convert_success = False
             self.is_auto = False
-
-        def coding_convert(self,content:str,encoding:str='utf-8'):
-            try:
-                return content.encode('raw_unicode_escape').decode(encoding)
-            except Exception as r:
-                self.win.show_msg.send(f"编码转换时发生错误 {r}\n\n","red")
-                self.win.reset_controls_state.send()
-                return False
         
-        def get_wnic(self):
+        def __get_wnic(self):
             '''获取无线网卡'''
             try:
                 if self.wnics.__len__() > 0:
@@ -404,7 +446,7 @@ class WifiCrackTool:
                 
             except Exception as r:
                 self.win.showerror(title='错误警告',message=f'获取无线网卡时发生未知错误 {r}')
-                self.tool.show_msg(f"获取无线网卡时发生未知错误 {r}\n\n","red")
+                self.tool.show_msg(f"[错误]获取无线网卡时发生未知错误 {r}\n\n","red")
                 self.tool.reset_controls_state()
                 
         def search_wifi(self):
@@ -443,8 +485,12 @@ class WifiCrackTool:
                 if len(self.ssids) > 0:
                     self.win.set_wifi_current_index.send(0)
             except Exception as r:
-                self.win.show_error.send('错误警告',f'扫描wifi时发生未知错误 {r}')
-                self.win.show_msg.send(f"扫描wifi时发生未知错误 {r}\n\n","red")
+                if r.args[0] == 'NULL pointer access' and self.iface.status() in [const.IFACE_DISCONNECTED,const.IFACE_INACTIVE]:
+                    self.win.show_warning.send('警告',f'你当前设备的WLAN未打开！请打开WLAN后再继续使用。')
+                    self.win.show_msg.send(f"[警告]你当前设备的WLAN未打开！请打开WLAN后再继续使用。\n\n","orange")
+                else:
+                    self.win.show_error.send('错误警告',f'扫描wifi时发生未知错误 {r}')
+                    self.win.show_msg.send(f"[错误]扫描wifi时发生未知错误 {r}\n\n","red")
                 self.win.reset_controls_state.send()
 
         def auto_crack(self):
@@ -479,12 +525,12 @@ class WifiCrackTool:
                 self.win.show_info.send('自动破解',"自动破解已完成！破解结果已记录到日志中")
                 
                 self.is_auto = False
-                self.tool.reset_controls_state()
+                self.win.reset_controls_state.send()
             except Exception as r:
                 self.win.show_error.send('错误警告','自动破解过程中发生未知错误 %s' %(r))
-                self.win.show_msg.send(f"自动破解过程中发生未知错误 {r}\n\n","red")
+                self.win.show_msg.send(f"[错误]自动破解过程中发生未知错误 {r}\n\n","red")
                 self.is_auto = False
-                self.tool.reset_controls_state()
+                self.win.reset_controls_state.send()
                 return False
         
         def crack(self,ssid:str):
@@ -499,7 +545,7 @@ class WifiCrackTool:
                 if self.iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]:  # 测试是否已经断开网卡连接
                     self.win.show_msg.send("现有连接断开成功！\n\n","black")
                 else:
-                    self.win.show_msg.send("现有连接断开失败！\n\n","red")
+                    self.win.show_msg.send("[错误]现有连接断开失败！\n\n","red")
                     return False
                 self.win.show_msg.send(f"正在准备破解WiFi[{ssid}]...\n\n","black")
 
@@ -508,14 +554,21 @@ class WifiCrackTool:
                     if len(pwd_dict_list) > 0:
                         self.win.show_msg.send(f"发现密码字典中存在相同SSID：{ssid}，开始尝试破解...\n\n","black")
                         for i,pwd_dict in enumerate(pwd_dict_list,1):
+                            # * 暂停线程
+                            with self.tool.crack_pause_condition:
+                                if self.tool.paused:
+                                    self.win.show_msg.send("破解已暂停.\n","orange")
+                                    self.tool.crack_pause_condition.wait()
+                            # * 停止线程
                             if self.tool.run==False:
-                                self.win.show_msg.send("破解已终止.\n","black")
+                                self.win.show_msg.send("破解已终止.\n","red")
                                 self.win.reset_controls_state.send()
                                 return False
                             pwd = pwd_dict['pwd']
                             result = self.connect(ssid,pwd,'json',i)
                             if result and not self.is_auto:
                                 self.win.show_info.send('破解成功',"连接成功，密码：%s\n(已复制到剪切板)"%(pwd))
+                                self.win.reset_controls_state.send()
                                 return True
                             elif result:
                                 return pwd
@@ -523,25 +576,32 @@ class WifiCrackTool:
                 self.win.show_msg.send(f"开始尝试使用密码本破解WiFi[{ssid}]...\n\n","black")
                 with open(self.tool.config_settings_data['pwd_txt_path'],'r', encoding='utf-8', errors='ignore') as lines:
                         for i,line in enumerate(lines,1):
+                            # * 暂停线程
+                            with self.tool.crack_pause_condition:
+                                if self.tool.paused:
+                                    self.win.show_msg.send("破解已暂停.\n","orange")
+                                    self.tool.crack_pause_condition.wait()
+                            # * 停止线程
                             if self.tool.run==False:
-                                self.win.show_msg.send("破解已终止.\n","black")
+                                self.win.show_msg.send("破解已终止.\n","red")
                                 self.win.reset_controls_state.send()
                                 return False
                             pwd = line.strip()
                             result = self.connect(ssid,pwd,'txt',i)
                             if result and not self.is_auto:
                                 self.win.show_info.send('破解成功',"连接成功，密码：%s\n(已复制到剪切板)"%(pwd))
+                                self.win.reset_controls_state.send()
                                 return True
                             elif result:
                                 return pwd
                         if not self.is_auto:
                             self.win.show_info.send('破解失败',"破解失败，已尝试完密码本中所有可能的密码")
-                            self.tool.reset_controls_state()
+                            self.win.reset_controls_state.send()
                 return False
             except Exception as r:
                 self.win.show_error.send('错误警告','破解过程中发生未知错误 %s' %(r))
-                self.win.show_msg.send(f"破解过程中发生未知错误 {r}\n\n","red")
-                self.tool.reset_controls_state()
+                self.win.show_msg.send(f"[错误]破解过程中发生未知错误 {r}\n\n","red")
+                self.win.reset_controls_state.send()
                 return False
         
         def connect(self,ssid,pwd,filetype,count):
@@ -586,7 +646,6 @@ class WifiCrackTool:
                 time.sleep(self.tool.config_settings_data['connect_time'])   # * 连接需要时间
                 if self.iface.status() == const.IFACE_CONNECTED:    # * 判断是否连接成功
                     self.win.show_msg.send(f"连接成功，密码：{pwd}\n\n","green")
-                    self.tool.reset_controls_state()
                     pyperclip.copy(pwd); # * 将密码复制到剪切板
                     if filetype != 'json':
                         self.tool.pwd_dict_data.append({'ssid':ssid,'pwd':pwd})
@@ -601,8 +660,8 @@ class WifiCrackTool:
 
             except Exception as r:
                 self.win.show_error.send('错误警告','连接wifi过程中发生未知错误 %s' %(r))
-                self.win.show_msg.send(f"连接wifi过程中发生未知错误 {r}\n\n","red")
-                self.tool.reset_controls_state()
+                self.win.show_msg.send(f"[错误]连接wifi过程中发生未知错误 {r}\n\n","red")
+                self.win.reset_controls_state.send()
                 return False
 
 if __name__ == "__main__":

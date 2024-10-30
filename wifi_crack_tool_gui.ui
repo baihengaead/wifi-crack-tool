@@ -32,7 +32,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>WiFi密码暴力破解工具v1.2.4 by 白恒aead</string>
+   <string>WiFi密码暴力破解工具v1.2.5 by 白恒aead</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -97,6 +97,9 @@
       <height>22</height>
      </size>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::NoFocus</enum>
+    </property>
     <property name="editable">
      <bool>true</bool>
     </property>
@@ -141,6 +144,9 @@
       <height>22</height>
      </size>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::NoFocus</enum>
+    </property>
    </widget>
    <widget class="QLabel" name="lbl_wnic">
     <property name="geometry">
@@ -182,6 +188,9 @@
       <height>22</height>
      </size>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::NoFocus</enum>
+    </property>
    </widget>
    <widget class="QLabel" name="lbl_using_pwd_file">
     <property name="geometry">
@@ -209,39 +218,6 @@
      </rect>
     </property>
    </widget>
-   <widget class="QSplitter" name="splitter">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>120</y>
-      <width>331</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Orientation::Horizontal</enum>
-    </property>
-    <widget class="QPushButton" name="btn_change_pwd_file">
-     <property name="text">
-      <string>更换密码本</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_refresh_wifi">
-     <property name="text">
-      <string>扫描WiFi</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_start">
-     <property name="text">
-      <string>开始</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_stop">
-     <property name="text">
-      <string>停止</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QLabel" name="lbl_scan_time">
     <property name="geometry">
      <rect>
@@ -263,6 +239,9 @@
       <width>62</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <property name="decimals">
      <number>1</number>
@@ -287,7 +266,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>连接时间(s):</string>
+     <string>连接间隔(s):</string>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="dbl_connect_time">
@@ -298,6 +277,9 @@
       <width>62</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <property name="decimals">
      <number>1</number>
@@ -311,6 +293,44 @@
     <property name="value">
      <double>3.000000000000000</double>
     </property>
+   </widget>
+   <widget class="QSplitter" name="splitter">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>120</y>
+      <width>375</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Horizontal</enum>
+    </property>
+    <widget class="QPushButton" name="btn_change_pwd_file">
+     <property name="text">
+      <string>更换密码本</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_refresh_wifi">
+     <property name="text">
+      <string>扫描WiFi</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_start">
+     <property name="text">
+      <string>开始</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_pause_or_resume">
+     <property name="text">
+      <string>暂停</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_stop">
+     <property name="text">
+      <string>停止</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
