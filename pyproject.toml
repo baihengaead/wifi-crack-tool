@@ -1,0 +1,17 @@
+[project]
+name = "wifi-crack-tool"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.9"
+dependencies = [
+    "comtypes>=1.4.4",
+    "pyinstaller>=6.9.0",
+    "pyperclip>=1.9.0",
+    "pyside6>=6.7.2",
+    "pywifi",
+    "pywin32>=306",
+]
+
+[tool.uv.sources]
+pywifi = { git = "https://github.com/baihengaead/pywifi.git", rev = "master" }
