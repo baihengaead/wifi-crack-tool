@@ -243,6 +243,10 @@ Tips：支持Win10、Win11、Linux，MacOS暂不支持
 
 ## 更新日志
 
+### v1.2.6
+- **[修复]** 在部分 Windows / 网卡驱动（例如 Killer/Intel AX 系列）上的“NULL pointer access”问题。
+
+
 ### v1.2.5
 
 - **[新增]** 支持在破解过程中**暂停**。([#26](https://github.com/baihengaead/wifi-crack-tool/issues/26))
