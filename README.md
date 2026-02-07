@@ -127,7 +127,7 @@ Python ≥ 3.11.x（推荐：3.11.9）
 
 ## 核心模块
 
-- Windows / Linux：pywifi、pyside6
+- Windows / Linux：[pywifi](https://github.com/baihengaead/pywifi)、pyside6
 - macOS：pyside6、pyperclip（WiFi 操作使用内置的 `wifi_macos.py` 模块，无需 pywifi）
 
 ## 系统要求
@@ -269,15 +269,15 @@ Python ≥ 3.11.x（推荐：3.11.9）
    pyinstaller -F -w wifi_crack_tool.py
    ```
 
-> **注意**：macOS 上 WiFi 操作使用内置的 `wifi_macos.py` 模块，通过 `networksetup` 和 `system_profiler` 命令实现，无需安装 pywifi。首次运行时系统可能会弹出权限请求，请允许终端/应用访问网络设置。
+> **注意**：macOS 上 WiFi 操作使用内置的 `wifi_macos.py` 模块，通过 `networksetup` 和 `system_profiler` 命令实现，无需安装 [pywifi](https://github.com/baihengaead/pywifi)。首次运行时系统可能会弹出权限请求，请允许终端/应用访问网络设置。
 
 ## 更新日志
 
 ### v1.2.5-maconly
-- **[新增]** 实现 macOS 平台下的 WiFi 扫描、连接、断开等功能 [wifi_macos.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_macos.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60))
-- **[修改]** 增加 macOS 平台检测和适配逻辑 [wifi_crack_tool.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60))
-- **[修改]** 适配 macOS 平台 [wifi_crack_tool_gui.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool_gui.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60))
-- **[新增]** macOS 平台依赖列表 [requirements_macos.txt](https://github.com/baihengaead/wifi-crack-tool/blob/main/requirements_macos.txt) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60))
+- **[新增]** 实现 macOS 平台下的 WiFi 扫描、连接、断开等功能 [wifi_macos.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_macos.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
+- **[修改]** 增加 macOS 平台检测和适配逻辑 [wifi_crack_tool.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
+- **[修改]** 适配 macOS 平台 [wifi_crack_tool_gui.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool_gui.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
+- **[新增]** macOS 平台依赖列表 [requirements_macos.txt](https://github.com/baihengaead/wifi-crack-tool/blob/main/requirements_macos.txt) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
 
 ### v1.2.5
 
