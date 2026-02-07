@@ -127,15 +127,15 @@ Python ≥ 3.11.x（推荐：3.11.9）
 
 ## 核心模块
 
-pywifi、pyside6
+- Windows / Linux：pywifi、pyside6
+- macOS：pyside6、pyperclip（WiFi 操作使用内置的 `wifi_macos.py` 模块，无需 pywifi）
 
 ## 系统要求
 
-- Windows 10 及以上 
+- Windows 10 及以上
 - Ubuntu 22.04 及以上版本 **（实验性）**
 - 其它支持 Python 3.11.x 以上的Linux系统 **（实验性）**
-
-Tips：支持Win10、Win11、Linux，MacOS暂不支持
+- macOS 12 (Monterey) 及以上
 
 ## 如何修改GUI
 
@@ -240,6 +240,36 @@ Tips：支持Win10、Win11、Linux，MacOS暂不支持
    ```shell
    pyinstaller -F -w wifi_crack_tool.py
    ```
+
+### macOS
+
+1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
+
+2. 安装所需模块（macOS 使用独立的依赖文件，无需 pywifi）
+
+   ```shell
+   pip3 install -r requirements_macos.txt
+   ```
+
+3. 编译 wifi_crack_tool_gui.ui
+
+   ```shell
+   pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
+   ```
+
+4. 编译运行 wifi_crack_tool.py
+
+   ```shell
+   python3 -u wifi_crack_tool.py
+   ```
+
+5. 打包 wifi_crack_tool.py
+
+   ```shell
+   pyinstaller -F -w wifi_crack_tool.py
+   ```
+
+> **注意**：macOS 上 WiFi 操作使用内置的 `wifi_macos.py` 模块，通过 `networksetup` 和 `system_profiler` 命令实现，无需安装 pywifi。首次运行时系统可能会弹出权限请求，请允许终端/应用访问网络设置。
 
 ## 更新日志
 

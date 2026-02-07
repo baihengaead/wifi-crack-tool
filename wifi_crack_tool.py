@@ -2,13 +2,17 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wifi-crack-tool
-Version: 1.2.5
+Version: 1.2.5 (macOS support added)
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
 
-from pywifi import const,PyWiFi,Profile
-from pywifi.iface import Interface
+# 根据系统选择 WiFi 库
+if platform.system() == 'Darwin':
+    from wifi_macos import MacOSWiFi as PyWiFi, MacOSConst as const, MacOSProfile as Profile, MacOSWiFiInterface as Interface
+else:
+    from pywifi import const,PyWiFi,Profile
+    from pywifi.iface import Interface
 
 import pyperclip
 
@@ -618,6 +622,26 @@ class WifiCrackTool:
                 akm = self.ui.cbo_security_type.currentText()
                 akm_i = self.ui.cbo_security_type.currentIndex()
                 akm_v = 4
+
+                # macOS 使用不同的连接方式
+                if platform.system() == "Darwin":
+                    self.win.show_msg.send(f"正在进行第{count}次尝试...\n","black")
+                    # macOS 直接使用 networksetup 连接
+                    connected = self.iface.connect(ssid, pwd)
+                    time.sleep(self.tool.config_settings_data['connect_time'])
+                    if connected and self.iface.status() == const.IFACE_CONNECTED:
+                        self.win.show_msg.send(f"连接成功，密码：{pwd}\n\n","green")
+                        pyperclip.copy(pwd)
+                        if filetype != 'json':
+                            self.tool.pwd_dict_data.append({'ssid':ssid,'pwd':pwd})
+                            with open(self.tool.pwd_dict_path, 'w',encoding='utf-8') as json_file:
+                                json.dump(self.tool.pwd_dict_data, json_file, indent=4)
+                        return True
+                    else:
+                        self.win.show_msg.send(f"连接失败，密码是{pwd}\n\n","red")
+                        return False
+
+                # Windows / Linux 使用 pywifi
                 if platform.system() == "Windows":
                     from pywifi import _wifiutil_win
                     akm_dict = _wifiutil_win.akm_str_to_value_dict
@@ -628,7 +652,7 @@ class WifiCrackTool:
                     akm_v = akm_dict[akm]
                 else:
                     akm_v = const.AKM_TYPE_NONE
-                
+
                 profile = Profile()  # * 创建wifi配置对象
                 if akm_i == 0:
                     profile = self.profile_dict[ssid]
@@ -637,7 +661,7 @@ class WifiCrackTool:
                     profile.auth = const.AUTH_ALG_OPEN  # * 网卡的开放
                     profile.akm = akm_v  # * wifi加密算法，一般是 WPA2PSK
                     profile.cipher = const.CIPHER_TYPE_CCMP # * 加密单元
-                    
+
                 profile.key = pwd   # * type: ignore #WiFi密码
                 self.iface.remove_network_profile(profile)  # * 删除wifi文件
                 tem_profile = self.iface.add_network_profile(profile)   # * 添加新的WiFi文件
@@ -718,8 +742,29 @@ if __name__ == "__main__":
             window = MainWindow(__lock)
             
         elif system == 'Darwin':  # macOS
-            print('当前系统是 macOS, 暂不支持')
-            sys.exit()
+            print('当前系统是 macOS')
+            import fcntl
+            #------------------- 互斥锁 -----------------------#
+            LOCKFILE = "/tmp/wifi_crack_tool_macos.lock"
+            def acquire_lock():
+                lock = os.open(LOCKFILE, os.O_RDWR | os.O_CREAT)
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    return lock
+                except IOError:
+                    return None
+
+            def release_lock(lock):
+                fcntl.flock(lock, fcntl.LOCK_UN)
+                os.close(lock)
+                os.remove(LOCKFILE)
+            #==================================================#
+
+            __lock = None
+            if PyWiFi().interfaces().__len__() <= 1:
+                __lock = acquire_lock()
+
+            window = MainWindow(__lock)
         else:
             print(f'当前系统为 {system}, 暂不支持')
             sys.exit()
