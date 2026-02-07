@@ -1,1 +1,2 @@
 -r requirements.txt
+git+https://github.com/baihengaead/pywifi.git@master#egg=pywifi
