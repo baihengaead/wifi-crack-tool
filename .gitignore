@@ -132,4 +132,6 @@ dmypy.json
 /config
 /dict
 /log
+
+# Passwords file
 passwords.txt
