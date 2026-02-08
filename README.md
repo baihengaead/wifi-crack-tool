@@ -128,7 +128,7 @@ Python ≥ 3.11.x（推荐：3.11.9）
 ## 核心模块
 
 - Windows / Linux：[pywifi](https://github.com/baihengaead/pywifi)、pyside6
-- macOS：pyside6、pyperclip（WiFi 操作使用内置的 `wifi_macos.py` 模块，无需 pywifi）
+- macOS：pyside6、pyperclip（WiFi 操作使用内置的 `wifi_macos.py` 模块，无需 [pywifi](https://github.com/baihengaead/pywifi)）
 
 ## 系统要求
 
@@ -245,7 +245,7 @@ Python ≥ 3.11.x（推荐：3.11.9）
 
 1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
 
-2. 安装所需模块（macOS 使用独立的依赖文件，无需 pywifi）
+2. 安装所需模块（macOS 使用独立的依赖文件，无需 [pywifi](https://github.com/baihengaead/pywifi)）
 
    ```shell
    pip3 install -r requirements_macos.txt
@@ -270,62 +270,3 @@ Python ≥ 3.11.x（推荐：3.11.9）
    ```
 
 > **注意**：macOS 上 WiFi 操作使用内置的 `wifi_macos.py` 模块，通过 `networksetup` 和 `system_profiler` 命令实现，无需安装 [pywifi](https://github.com/baihengaead/pywifi)。首次运行时系统可能会弹出权限请求，请允许终端/应用访问网络设置。
-
-## 更新日志
-
-### v1.2.5-maconly
-- **[新增]** 实现 macOS 平台下的 WiFi 扫描、连接、断开等功能 [wifi_macos.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_macos.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
-- **[修改]** 增加 macOS 平台检测和适配逻辑 [wifi_crack_tool.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
-- **[修改]** 适配 macOS 平台 [wifi_crack_tool_gui.py](https://github.com/baihengaead/wifi-crack-tool/blob/main/wifi_crack_tool_gui.py) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
-- **[新增]** macOS 平台依赖列表 [requirements_macos.txt](https://github.com/baihengaead/wifi-crack-tool/blob/main/requirements_macos.txt) ([#60](https://github.com/baihengaead/wifi-crack-tool/pull/60)) (@dawdadsd)
-
-### v1.2.5
-
-- **[新增]** 支持在破解过程中**暂停**。([#26](https://github.com/baihengaead/wifi-crack-tool/issues/26))
-- **[修复]** 在设备的**WLAN功能关闭**时，**扫描WiFi会抛出意外错误**的问题。([#28](https://github.com/baihengaead/wifi-crack-tool/issues/28))
-- **[修复]** 在自动破解全部WiFi的情况下，连接完成一个WiFi后，所有**按钮的状态会被重置**的问题。
-
-### v1.2.4
-
-- **[新增]** 对**WPA3**的支持（Linux）。
-
-### v1.2.3
-
-- **[新增]** 对**WPA3**的支持（Windows）。
-- **[新增]** **自动获取**安全类型的功能（Windows）。
-- **[优化]** SSID的utf-8**编码转换**（Windows）。
-
-### v1.2.2
-
-- **[修复]** 在多网卡的情况下**意外的提示**了 “应用程序的另一个实例已经在运行。” 的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
-- **[修复]** 在部分情况下，进行utf-8**编码转换**时，出现转换**异常**的问题。([#13](https://github.com/baihengaead/wifi-crack-tool/issues/13))
-- **[修复]** 在破解中文WiFi后，连接的**中文WiFi名称乱码**的问题。
-
-### v1.2.1
-
-- **[优化]** 对Linux平台支持。
-
-### v1.2.0
-
-- **[新增]** 对扫描到的所有WiFi进行**自动破解**。([#10](https://github.com/baihengaead/wifi-crack-tool/issues/10))
-
-### v1.1.1
-
-- **[修复]** 部分已知问题。
-
-### v1.1.0
-
-- **[重构]** GUI框架从**tkinter**更换为了**pyside6**，对UI进行了调整。
-- **[新增]** 在UI可以设置**扫描时间**、**连接时间**以及选择**无线网卡**的功能。
-- **[新增]** 打开**读取配置**文件，关闭**保存配置**文件的功能。
-- **[新增]** 破解成功将**SSID与密码保存在本地密码字典**中，并在破解WiFi时优先从本地密码字典检索相关密码进行破解。
-- **[新增]** 在拥**有多个无线网卡**的情况下，可以**多开工具**并选择不同网卡**并行破解**。
-- **[修复]** 在搜索不到WiFi时报错的问题。
-- **[优化]** 消息框中出现**破解成功**、**破解失败**以及**异常报错**的消息时，**单独**以不同颜色**高亮显示**。
-- **[优化]** 部分功能。
-
-### v1.0.0
-
-- **[新增]** 日志输出、破解成功后**自动将密码复制到剪切板**。
-- **[修复]** WiFi**中文名称乱码**，**无法正常破解**的问题。
-- **[优化]** 部分功能。
