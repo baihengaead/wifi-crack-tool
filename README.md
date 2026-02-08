@@ -1,4 +1,4 @@
-# WiFi暴力破解工具
+# 无线网络安全测试工具
 
 ## 免责声明
 
@@ -21,9 +21,9 @@
 
 ### **✅ 何为合法、合规的使用场景**
 
-**再次强调！**本项目代码、工具及思想，**仅限于以下合规场景**：
+**再次强调！** 本项目代码、工具及思想，**仅限于以下合规场景**：
 *   **学术研究与安全教学**：在受控的实验室或课堂环境中，用于学习无线网络安全原理。
-*   **授权渗透测试**：在**已获得目标系统所有者明确书面授权**的前提下，用于安全评估与漏洞验证。
+*   **已授权的渗透测试**：在**已获得目标系统所有者明确书面授权**的前提下，用于安全评估与漏洞验证。
 *   **个人设备安全测试**：**仅限**用于测试您个人**完全拥有并控制**的网络设备（如自家的路由器）。
 
 **任何超出上述范围的用途，均可能构成违法行为。**
@@ -56,9 +56,11 @@
 
 ## 项目介绍
 
-wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi暴力破解工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，且拥有自动保存破解成功后的WiFi SSID与密码到本地密码字典、在有多个无线网卡的情况下可以多开工具并行破解同一个或不同的WiFi。
+本项目是基于Python开发的拥有图形界面的无线网络安全测试工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，在有多个无线网卡的情况下可以多开工具并行测试连接同一个或不同的WiFi。
 
-支持 WPA、WPAPSK、WPA2、WPA2PSK、WPA3、WPA3SAE 安全协议
+支持测试 WPA、WPAPSK、WPA2、WPA2PSK、WPA3、WPA3SAE 安全协议
+
+**再次强调，仅限用于已授权的渗透测试，或无线网络安全技术学习使用！**
 
 ## 如何使用
 
@@ -70,54 +72,17 @@ wifi_crack_tool是一款基于Python开发的拥有图形界面的WiFi暴力破�
 
 接下来正常使用就可以啦。
 
-##### 结果
-
-破解的结果会在日志中显示，破解完成后会弹窗提示，并自动将破解得到的密码复制到剪切板。
-
 #### 自动运行
 
 ##### 介绍
 
-自动破解扫描到的所有WiFi
-
-##### 使用
-
-1. 选择你要使用的无线网卡
-2. 扫描WiFi
-3. WiFi名称选择 ——全部——
-4. 开始破解
-
-##### 结果
-
-破解的结果会在日志中显示，全部破解完成后会弹窗提示。
-
-结果示例：
-
-```txt
-(1)   wifi名称1   密码1
-(2)   wifi名称2   密码2
-...
-```
+自动测试连接扫描到的所有WiFi
 
 #### 多开并发
 
 ##### 要求
 
 电脑至少有2个无线网卡，且都可以正常使用
-
-##### 使用
-
-以有2个无线网卡为例
-
-1. 打开2次 `wifi_crack_tool.exe`或者 `python wifi_crack_tool.py`
-2. 选择不同的无线网卡
-3. 扫描WiFi
-4. 选择需要破解的WiFi
-5. 开始破解
-
-##### 结果
-
-见 简单使用 / 自动运行
 
 #### 密码本
 
@@ -186,137 +151,3 @@ Python ≥ 3.11.x（推荐：3.11.9）
 - Ubuntu 22.04 及以上版本 **（实验性）**
 - 其它支持 Python 3.11.x 以上的Linux系统 **（实验性）**
 - macOS 12 (Monterey) 及以上
-
-## 如何修改GUI
-
-1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
-2. 安装所需模块
-
-   ```cmd
-   pip install -r requirements.txt
-   ```
-3. 启动QT Designer pyside6-designer
-
-   ```cmd
-   pyside6-designer
-   ```
-4. 在QT Designer中打开wifi_crack_tool_gui.ui
-5. 使用设计器对UI进行调整
-
-## 如何运行以及打包
-
-### Windows
-
-1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
-
-2. 安装所需模块
-
-   ```cmd
-   pip install -r requirements_win.txt
-   ```
-
-3. 编译 wifi_crack_tool_gui.ui
-
-   ```cmd
-   pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
-   ```
-
-4. 编译运行 wifi_crack_tool.py
-
-   ```cmd
-   python -u wifi_crack_tool.py
-   ```
-
-5. 打包 wifi_crack_tool.py
-
-   ```cmd
-   pyinstaller -F -w wifi_crack_tool.py
-   ```
-
-### Linux（以 Ubuntu 24.04 为例）
-
-1. 更新软件包
-
-   ```shell
-   sudo apt update
-   sudo apt upgrade
-   ```
-
-2. 安装QT GUI依赖库 以及 剪切板依赖库
-
-   ```shell
-   sudo apt install libxcb-cursor0
-   sudo apt install xclip
-   ```
-
-3. 安装python3虚拟环境库
-
-   ```shell
-   sudo apt install python3-venv
-   ```
-
-4. 创建python3虚拟环境
-
-   ```shell
-   python3 -m venv wifi-crack-tool-venv
-   ```
-
-5. 激活python3虚拟环境
-
-   ```shell
-   source wifi-crack-tool-venv/bin/activate
-   ```
-
-6. 安装所需模块
-
-   ```shell
-   pip3 install -r requirements_linux.txt
-   ```
-
-7. 编译 wifi_crack_tool_gui.ui
-
-   ```shell
-   pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
-   ```
-
-8. 编译运行 wifi_crack_tool.py
-
-   ```shell
-   python3 -u wifi_crack_tool.py
-   ```
-
-9. 打包 wifi_crack_tool.py
-
-   ```shell
-   pyinstaller -F -w wifi_crack_tool.py
-   ```
-
-### macOS
-
-1. [下载 Python 3.11.9](https://www.python.org/downloads/release/python-3119/) 并安装
-
-2. 安装所需模块（macOS 使用独立的依赖文件，无需 [pywifi](https://github.com/baihengaead/pywifi)）
-
-   ```shell
-   pip3 install -r requirements_macos.txt
-   ```
-
-3. 编译 wifi_crack_tool_gui.ui
-
-   ```shell
-   pyside6-uic wifi_crack_tool_gui.ui -o wifi_crack_tool_gui.py
-   ```
-
-4. 编译运行 wifi_crack_tool.py
-
-   ```shell
-   python3 -u wifi_crack_tool.py
-   ```
-
-5. 打包 wifi_crack_tool.py
-
-   ```shell
-   pyinstaller -F -w wifi_crack_tool.py
-   ```
-
-> **注意**：macOS 上 WiFi 操作使用内置的 `wifi_macos.py` 模块，通过 `networksetup` 和 `system_profiler` 命令实现，无需安装 [pywifi](https://github.com/baihengaead/pywifi)。首次运行时系统可能会弹出权限请求，请允许终端/应用访问网络设置。
