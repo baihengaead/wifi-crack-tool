@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
 Author: 白恒aead
-Repositories: https://github.com/baihengaead/wifi-crack-tool
+Repositories: https://github.com/baihengaead/wlan-sec-test-tool
 Version: 1.3.0
 """
 import os,sys,datetime,time,threading,ctypes,json
