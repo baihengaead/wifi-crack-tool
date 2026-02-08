@@ -10,7 +10,7 @@
 
 ### **⛔ 严正谴责违规传播行为**
 
-我们近期发现，社交媒体上存在大量<font color="red"><b>未经授权</b></font>的二次分发、修改或传播本项目代码及衍生作品的行为。部分传播者**擅自删除或未包含项目原版的关键合规声明**（如[开源协议](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)、[免责声明](https://github.com/baihengaead/wifi-crack-tool#%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E)），对用户产生严重误导，极大地增加了技术被滥用的法律与安全风险。
+我们近期发现，社交媒体上存在大量<font color="red"><b>未经授权</b></font>的二次分发、修改或传播本项目代码及衍生作品的行为。部分传播者**擅自删除或未包含项目原版的关键合规声明**（如[开源协议](https://github.com/baihengaead/wlan-sec-test-tool/blob/main/LICENSE)、[免责声明](https://github.com/baihengaead/wlan-sec-test-tool#%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E)），对用户产生严重误导，极大地增加了技术被滥用的法律与安全风险。
 
 我们在此明确声明：
 1.  **任何未完整保留原项目全部版权信息、开源协议（MIT License）及合规免责声明的分发行为，均属违规。**
@@ -37,7 +37,7 @@
 **请在违规内容所在平台点击举报/投诉。**
 
 **也可通过以下方式向我们举报：**
-- **最佳途径**：在本仓库的 [Issues](https://github.com/baihengaead/wifi-crack-tool/issues) 页面创建新问题，标题注明 `[违规举报]`，并提供违规内容的**可公开访问链接**及相关截图。
+- **最佳途径**：在本仓库的 [Issues](https://github.com/baihengaead/wlan-sec-test-tool/issues) 页面创建新问题，标题注明 `[违规举报]`，并提供违规内容的**可公开访问链接**及相关截图。
 
 我们将对有效举报进行核实，并视情况采取公开警告、向相关平台发起举报/投诉等措施。
 
@@ -56,7 +56,7 @@
 
 ## 项目介绍
 
-本项目是基于Python开发的拥有图形界面的无线网络安全测试工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wifi-crack-tool/blob/main/LICENSE)，可使用自定义密码本，在有多个无线网卡的情况下可以多开工具并行测试连接同一个或不同的WiFi。
+本项目是基于Python开发的拥有图形界面的无线网络安全测试工具，支持多平台，使用本项目应遵循[MIT许可](https://github.com/baihengaead/wlan-sec-test-tool/blob/main/LICENSE)，通过使用自定义密码本对目标WiFi进行连接测试，来判断其是否存在弱口令或其它安全风险。
 
 支持测试 WPA、WPAPSK、WPA2、WPA2PSK、WPA3、WPA3SAE 安全协议
 
@@ -76,13 +76,13 @@
 
 ##### 介绍
 
-自动测试连接扫描到的所有WiFi
+自动测试连接扫描到的WiFi
 
 #### 多开并发
 
 ##### 要求
 
-电脑至少有2个无线网卡，且都可以正常使用
+PC设备需要至少2个无线网卡，且都可以正常工作
 
 #### 密码本
 
@@ -133,7 +133,7 @@ password3
 ##### 文件路径
 
 ```cmd
-./log/wifi_crack_log_{datetime}.txt
+./log
 ```
 
 ## 开发环境
