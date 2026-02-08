@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'wifi_crack_tool_gui.ui'
+## Form generated from reading UI file 'wlan_sec_test_tool_gui.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.2
 ##
@@ -32,9 +32,6 @@ class Ui_MainWindow(object):
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QSize(500, 500))
         MainWindow.setMaximumSize(QSize(529, 600))
-        icon = QIcon()
-        icon.addFile(u"images/wificrack.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        MainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
@@ -134,7 +131,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"WiFi\u5bc6\u7801\u66b4\u529b\u7834\u89e3\u5de5\u5177v1.2.5 by \u767d\u6052aead", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u65e0\u7ebf\u7f51\u7edc\u5b89\u5168\u6d4b\u8bd5\u5de5\u5177v1.3.0 by \u767d\u6052aead", None))
         self.lbl_wifi_name.setText(QCoreApplication.translate("MainWindow", u"WiFi\u540d\u79f0:", None))
         self.lbl_security_type.setText(QCoreApplication.translate("MainWindow", u"\u5b89\u5168\u7c7b\u578b:", None))
         self.lbl_wnic.setText(QCoreApplication.translate("MainWindow", u"\u65e0\u7ebf\u7f51\u5361:", None))
