@@ -21,18 +21,18 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>529</width>
     <height>500</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>529</width>
-    <height>600</height>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>无线网络安全测试工具v1.3.0 by 白恒aead</string>
+   <string>无线网络安全测试工具v1.3.1 by 白恒aead</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -243,10 +243,10 @@
      <number>1</number>
     </property>
     <property name="minimum">
-     <double>0.100000000000000</double>
+     <double>1.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>0.500000000000000</double>
     </property>
     <property name="value">
      <double>8.000000000000000</double>
@@ -281,10 +281,10 @@
      <number>1</number>
     </property>
     <property name="minimum">
-     <double>0.100000000000000</double>
+     <double>1.000000000000000</double>
     </property>
     <property name="singleStep">
-     <double>0.100000000000000</double>
+     <double>0.500000000000000</double>
     </property>
     <property name="value">
      <double>3.000000000000000</double>

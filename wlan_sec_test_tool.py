@@ -2,7 +2,7 @@
 """
 Author: 白恒aead
 Repositories: https://github.com/baihengaead/wlan-sec-test-tool
-Version: 1.3.0
+Version: 1.3.1
 """
 import os,sys,datetime,time,threading,ctypes,json
 import platform
@@ -14,7 +14,8 @@ else:
     from pywifi import const,PyWiFi,Profile
     from pywifi.iface import Interface
 
-from PySide6.QtCore import Qt, QThread, Signal, QSize
+from PySide6.QtCore import Qt, QThread, Signal, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QMessageBox
 from wlan_sec_test_tool_gui import Ui_MainWindow
 
@@ -29,7 +30,7 @@ class MainWindow(QMainWindow):
             sys.exit()
         
         #------------------------- 初始化控件状态 -------------------------------#
-        self.ui.cbo_wifi_name.addItem('——全部——')
+        self.ui.cbo_wifi_name.addItem('——请选择——')
         
         self.ui.cbo_security_type.addItems(['——自动——','WPA','WPAPSK','WPA2','WPA2PSK','WPA3','WPA3SAE','OPEN'])
         self.ui.cbo_security_type.setCurrentIndex(0)
@@ -220,6 +221,37 @@ class WLANSecTestTool:
         self.run = False
         self.pwd_file_changed = False
         
+        # 安全测试提醒
+        self.show_msg('\n【免责声明】\n本软件（项目）属于开源项目(MIT License)，其所涉及的技术、思路和工具仅限用于以下合法合规场景：\n1、学术研究与安全教学\n2、已授权的渗透测试\n3、个人设备安全测试\n'
+                             '\n任何人不得将其用于非法用途（如：未授权的渗透测试、未经所有者许可的网络访问 等），\n'
+                             '\n在使用本软件（项目）前，请先阅读《中华人民共和国网络安全法》、《中华人民共和国刑法》以及相关法律法规，并查看本软件（项目）的README.md文档（项目仓库地址：https://github.com/baihengaead/wlan-sec-test-tool）。\n'
+                             '\n用户因未遵守本声明或项目仓库中README.md文档的声明而导致的任何法律纠纷、安全事件及财产损失，均由用户自行承担全部责任，与本软件（项目）维护者（开发者）无关。\n'
+                             '\n请确保已仔细阅读并完全理解上述声明和法律参考，您的使用行为将被视为对上述内容的完全接受。\n',"blue")
+        
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle('免责声明')
+        msg_box.setText('本软件（项目）属于开源项目(MIT License)，其所涉及的技术、思路和工具仅限用于以下合法合规场景：\n1、学术研究与安全教学\n2、已授权的渗透测试\n3、个人设备安全测试\n'
+                             '\n任何人不得将其用于非法用途（如：未授权的渗透测试、未经所有者许可的网络访问 等），\n'
+                             '\n在使用本软件（项目）前，请先阅读《中华人民共和国网络安全法》、《中华人民共和国刑法》以及相关法律法规，并查看本软件（项目）的README.md文档（项目仓库地址：https://github.com/baihengaead/wlan-sec-test-tool）。\n'
+                             '\n用户因未遵守本声明或项目仓库中README.md文档的声明而导致的任何法律纠纷、安全事件及财产损失，均由用户自行承担全部责任，与本软件（项目）维护者（开发者）无关。\n'
+                             '\n请确保已仔细阅读并完全理解上述声明和法律参考，您的使用行为将被视为对上述内容的完全接受。\n')
+        msg_box.setIcon(QMessageBox.Icon.Information)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Close)
+        msg_box.setButtonText(QMessageBox.StandardButton.Ok, '确定')
+        msg_box.setButtonText(QMessageBox.StandardButton.Close, '关闭')
+        # 设置窗口标志，使其始终置顶
+        msg_box.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        # 保存返回值（用于判断按钮点击）
+        result = msg_box.exec()
+        # 检查是否点击了"OK"按钮
+        if result == QMessageBox.StandardButton.Close:
+            sys.exit()
+        else:
+            wlaqf_url = "https://flk.npc.gov.cn/detail?id=021e7d7684474107b8f3febbb1c4f8b5&fileId=&type=&title=%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%B3%95"
+            xf_url = "https://flk.npc.gov.cn/detail?id=ff808181796a636a0179822a19640c92&fileId=&type=&title=%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E5%88%91%E6%B3%95"
+            QDesktopServices.openUrl(QUrl(xf_url))
+            QDesktopServices.openUrl(QUrl(wlaqf_url))
+        
         # 创建测试破解对象
         self.crack = self.Crack(self)
         
@@ -331,7 +363,7 @@ class WLANSecTestTool:
     def refresh_wifi(self):
         try:
             self.ui.cbo_wifi_name.clear()
-            self.ui.cbo_wifi_name.addItem('——全部——')
+            self.ui.cbo_wifi_name.addItem('——请选择——')
             self.ui.cbo_wifi_name.setDisabled(True)
             self.ui.btn_refresh_wifi.setDisabled(True)
             self.ui.btn_start.setDisabled(True)
@@ -350,16 +382,16 @@ class WLANSecTestTool:
         try:
             if self.config_settings_data['pwd_txt_path']!="" and os.path.exists(self.config_settings_data['pwd_txt_path']):
                 wifi_name = self.ui.cbo_wifi_name.currentText()
-                self.run = True
-                self.set_controls_running_state()
-                if self.ui.cbo_wifi_name.currentIndex() == 0:
-                    thread = threading.Thread(target=self.crack.auto_test)
-                    thread.daemon = True
-                    thread.start()
-                else:
+                if self.ui.cbo_wifi_name.currentIndex() != 0:
+                    self.run = True
+                    self.set_controls_running_state()
                     thread = threading.Thread(target=self.crack.test,args=(wifi_name,))
                     thread.daemon = True
                     thread.start()
+                else:
+                    self.win.showinfo(title='提示',message='请先选择需要测试的wifi')
+                    self.show_msg('请先选择需要测试的wifi\n\n',"black")
+                    self.reset_controls_state()
             else:
                 if self.change_pwd_file():
                     self.start()
@@ -415,7 +447,6 @@ class WLANSecTestTool:
             self.profile_dict = {}
             '''wifi信息字典'''
             self.convert_success = False
-            self.is_auto = False
         
         def __get_wnic(self):
             '''获取无线网卡'''
@@ -479,46 +510,6 @@ class WLANSecTestTool:
                     self.win.show_msg.send(f"[错误]扫描wifi时发生未知错误 {r}\n\n","red")
                 self.win.reset_controls_state.send()
 
-        def auto_test(self):
-            '''
-            自动测试所有WiFi
-            '''
-            try:
-                self.is_auto = True
-                self.win.show_msg.send(f"开始自动测试已扫描到的所有WiFi\n","blue")
-                wifi_info = "WiFi列表：\n"
-                for i,ssid in enumerate(self.ssids,1):
-                    wifi_info = wifi_info+f"{('&nbsp;'*40)}({i}){('&nbsp;'*10)}{ssid}\n"
-                self.win.show_msg.send(wifi_info,"blue")
-                
-                pwds = {}
-                colors = {}
-                for ssid in self.ssids:
-                    pwd = self.test(ssid)
-                    if isinstance(pwd,str):
-                        pwds[ssid] = pwd
-                        colors[ssid] = "green"
-                    else:
-                        pwds[ssid] = "连接失败"
-                        colors[ssid] = "red"
-                
-                self.win.show_msg.send(f"自动测试已完成！\n","blue")
-                crack_result_info = "结果如下：\n"
-                for i,ssid in enumerate(self.ssids,1):
-                    crack_result_info = crack_result_info+f"<span style='color:{colors[ssid]}'>{('&nbsp;'*40)}({i}){('&nbsp;'*10)}{ssid}{('&nbsp;'*10)}{pwds[ssid]}</span>\n"
-                
-                self.win.show_msg.send(crack_result_info,"blue")
-                self.win.show_info.send('自动测试',"自动测试已完成！测试结果已记录到日志中")
-                
-                self.is_auto = False
-                self.win.reset_controls_state.send()
-            except Exception as r:
-                self.win.show_error.send('错误警告','自动测试过程中发生未知错误 %s' %(r))
-                self.win.show_msg.send(f"[错误]自动测试过程中发生未知错误 {r}\n\n","red")
-                self.is_auto = False
-                self.win.reset_controls_state.send()
-                return False
-        
         def test(self,ssid:str):
             '''
             测试wifi
@@ -552,13 +543,11 @@ class WLANSecTestTool:
                                 return False
                             pwd = pwd_dict['pwd']
                             result = self.connect(ssid,pwd,'json',i)
-                            if result and not self.is_auto:
+                            if result:
                                 self.win.show_info.send('测试完成',f"WiFi[{ssid}]存在安全风险，建议修改密码！")
                                 self.win.reset_controls_state.send()
                                 self.iface.disconnect()
                                 return True
-                            elif result:
-                                return pwd
                         self.win.show_msg.send(f"已尝试完密码字典中[{ssid}]的所有密码，未成功连接\n\n","red")
                 self.win.show_msg.send(f"开始尝试使用密码本连接WiFi[{ssid}]...\n\n","black")
                 with open(self.tool.config_settings_data['pwd_txt_path'],'r', encoding='utf-8', errors='ignore') as lines:
@@ -575,16 +564,13 @@ class WLANSecTestTool:
                                 return False
                             pwd = line.strip()
                             result = self.connect(ssid,pwd,'txt',i)
-                            if result and not self.is_auto:
-                                self.win.show_info.send('测试完成',f"发现WiFi[{ssid}]存在密码安全风险，建议立即修改密码！")
+                            if result:
+                                self.win.show_info.send('测试完成',f"发现WiFi[{ssid}]密码存在安全风险，建议立即修改密码！")
                                 self.win.reset_controls_state.send()
                                 self.iface.disconnect()
                                 return True
-                            elif result:
-                                return pwd
-                        if not self.is_auto:
-                            self.win.show_info.send('测试完成',f"暂未发现WiFi[{ssid}]存在密码安全风险，若你的WiFi长期未修改过密码，建议修改密码")
-                            self.win.reset_controls_state.send()
+                        self.win.show_info.send('测试完成',f"暂未发现WiFi[{ssid}]密码存在安全风险，若你的WiFi长期未修改过密码，建议修改密码")
+                        self.win.reset_controls_state.send()
                 return False
             except Exception as r:
                 self.win.show_error.send('错误警告','测试过程中发生未知错误 %s' %(r))
@@ -601,7 +587,7 @@ class WLANSecTestTool:
             :count 已尝试连接的次数
             '''
             try:
-                self.iface.disconnect()  # * 断开所有连接
+                # self.iface.disconnect()  # * 断开所有连接
                 # * 判断安全加密类型
                 akm = self.ui.cbo_security_type.currentText()
                 akm_i = self.ui.cbo_security_type.currentIndex()
@@ -615,7 +601,7 @@ class WLANSecTestTool:
                     time.sleep(self.tool.config_settings_data['connect_time'])
                     if connected and self.iface.status() == const.IFACE_CONNECTED:
                         self.win.show_msg.send(f"测试连接成功\n\n","green")
-                        self.win.show_msg.send(f"发现WiFi[{ssid}]存在密码安全风险，建议立即修改密码！\n\n","red")
+                        self.win.show_msg.send(f"发现WiFi[{ssid}]密码存在安全风险，建议立即修改密码！\n\n","red")
                         self.iface.disconnect()
                         return True
                     else:
@@ -651,7 +637,7 @@ class WLANSecTestTool:
                 time.sleep(self.tool.config_settings_data['connect_time'])   # * 连接需要时间
                 if self.iface.status() == const.IFACE_CONNECTED:    # * 判断是否连接成功
                     self.win.show_msg.send(f"测试连接成功\n\n","green")
-                    self.win.show_msg.send(f"发现WiFi[{ssid}]存在密码安全风险，建议立即修改密码！\n\n","red")
+                    self.win.show_msg.send(f"发现WiFi[{ssid}]密码存在安全风险，建议立即修改密码！\n\n","red")
                     self.iface.disconnect()
                     self.iface.remove_network_profile(profile)  
                     return True
