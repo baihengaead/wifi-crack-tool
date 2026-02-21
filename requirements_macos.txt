@@ -1,3 +1,6 @@
 # macOS 专用依赖
 # WiFi 操作使用内置的 wifi_macos.py 模块，无需 pywifi
+# pyobjc-framework-CoreWLAN 用于通过 CoreWLAN 框架进行主动 WiFi 扫描
 -r requirements.txt
+pyobjc-core>=10.0
+pyobjc-framework-CoreWLAN>=10.0

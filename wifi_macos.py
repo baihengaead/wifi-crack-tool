@@ -2,6 +2,8 @@
 """
 macOS WiFi 工具模块
 用于在 macOS 上进行 WiFi 扫描和连接操作
+支持 macOS 14+ (airport 已废弃) 和 macOS 15+ (airport 已移除)
+使用 CoreWLAN 框架进行主动扫描，system_profiler 作为备用方案
 """
 import subprocess
 import re
@@ -9,6 +11,13 @@ import time
 from typing import Optional, List, Dict
 from dataclasses import dataclass
 from enum import IntEnum
+
+# 尝试导入 CoreWLAN（需要 pyobjc-framework-CoreWLAN）
+try:
+    from CoreWLAN import CWWiFiClient
+    HAS_COREWLAN = True
+except ImportError:
+    HAS_COREWLAN = False
 
 
 class MacOSWiFiStatus(IntEnum):
@@ -80,103 +89,199 @@ class MacOSWiFiInterface:
             return MacOSWiFiStatus.INACTIVE
 
     def scan(self) -> None:
-        """开始扫描 WiFi"""
+        """开始扫描 WiFi，使用 CoreWLAN 触发主动扫描"""
         self._status = MacOSWiFiStatus.SCANNING
+        if HAS_COREWLAN:
+            try:
+                client = CWWiFiClient.sharedWiFiClient()
+                iface = client.interface()
+                if iface:
+                    # CoreWLAN 主动扫描，刷新系统缓存
+                    iface.scanForNetworksWithName_error_(None, None)
+            except Exception:
+                pass
 
-    def scan_results(self) -> List[WiFiNetwork]:
-        """获取扫描结果"""
+    def _scan_with_corewlan(self) -> Optional[List[WiFiNetwork]]:
+        """
+        使用 CoreWLAN 框架扫描 WiFi。
+        如果已授权定位服务，可直接获取 SSID/BSSID；否则返回 None 回退到 system_profiler。
+        """
+        if not HAS_COREWLAN:
+            return None
+        try:
+            client = CWWiFiClient.sharedWiFiClient()
+            iface = client.interface()
+            if not iface:
+                return None
+
+            scan_results, _ = iface.scanForNetworksWithName_error_(None, None)
+            if not scan_results:
+                return None
+
+            # 检查是否能获取 SSID（需要定位服务授权）
+            first = list(scan_results)[0]
+            if first.ssid() is None:
+                # 未授权定位服务，SSID 不可用，回退到 system_profiler
+                return None
+
+            networks = []
+            for n in scan_results:
+                ssid = n.ssid() or ''
+                bssid = n.bssid() or ''
+                rssi = n.rssiValue()
+                channel = n.wlanChannel().channelNumber() if n.wlanChannel() else 0
+                # 解析安全类型
+                sec_mode = n.securityMode() if hasattr(n, 'securityMode') else -1
+                security = self._corewlan_security_str(sec_mode)
+                networks.append(WiFiNetwork(
+                    ssid=ssid, bssid=bssid, rssi=rssi,
+                    channel=channel, security=security
+                ))
+            return networks
+        except Exception:
+            return None
+
+    @staticmethod
+    def _corewlan_security_str(mode: int) -> str:
+        """将 CoreWLAN securityMode 枚举转为可读字符串"""
+        # CWSecurity 枚举值
+        mapping = {
+            0: "None",           # kCWSecurityNone
+            1: "WEP",            # kCWSecurityWEP
+            2: "WPA Personal",   # kCWSecurityWPAPersonal
+            3: "WPA2 Personal",  # kCWSecurityWPA2Personal / WPA/WPA2 Personal
+            4: "WPA Enterprise",
+            5: "WPA2 Enterprise",
+            6: "WPA3 Personal",  # kCWSecurityWPA3Personal
+            7: "WPA3 Enterprise",
+            8: "WPA3 Transition", # kCWSecurityWPA3WithWPA2Personal
+        }
+        return mapping.get(mode, "Unknown")
+
+    def _scan_with_system_profiler(self) -> List[WiFiNetwork]:
+        """
+        使用 system_profiler SPAirPortDataType 解析 WiFi 列表。
+        通过缩进层级正确区分 SSID 行与其他字段，避免误判。
+        """
         networks = []
         try:
-            # 使用 system_profiler 获取 WiFi 信息（airport 已废弃）
             result = subprocess.run(
                 ["system_profiler", "SPAirPortDataType"],
                 capture_output=True, text=True, timeout=30
             )
-
             if result.returncode != 0:
-                print(f"扫描失败: {result.stderr}")
                 return networks
 
             lines = result.stdout.split('\n')
-            current_network = None
-            in_other_networks = False
-            in_current_network = False
+            in_network_section = False
+            # 记录 "Current Network Information:" 或 "Other Local Wi-Fi Networks:" 的缩进层级
+            section_indent = -1
+            # SSID 行的缩进层级（比 section header 深一级）
+            ssid_indent = -1
             network_data = {}
 
             for line in lines:
+                if not line.strip():
+                    continue
+
+                # 计算当前行的缩进（前导空格数）
+                indent = len(line) - len(line.lstrip())
+
+                # 检测网络信息段落
+                if "Current Network Information:" in line or "Other Local Wi-Fi Networks:" in line:
+                    # 保存之前未完成的网络
+                    self._save_network(network_data, networks)
+                    network_data = {}
+                    in_network_section = True
+                    section_indent = indent
+                    ssid_indent = -1
+                    continue
+
+                if not in_network_section:
+                    continue
+
+                # 如果缩进回退到 section 级别或更浅，说明网络段落结束
+                if indent <= section_indent:
+                    self._save_network(network_data, networks)
+                    network_data = {}
+                    in_network_section = False
+                    section_indent = -1
+                    ssid_indent = -1
+                    continue
+
                 stripped = line.strip()
 
-                # 检测当前连接的网络部分
-                if "Current Network Information:" in line:
-                    in_current_network = True
-                    in_other_networks = False
-                    continue
+                # 确定 SSID 行的缩进（段落内第一个以 : 结尾的行）
+                if ssid_indent == -1 and stripped.endswith(':'):
+                    ssid_indent = indent
 
-                # 检测其他网络部分
-                if "Other Local Wi-Fi Networks:" in line:
-                    in_other_networks = True
-                    in_current_network = False
-                    continue
-
-                # 解析网络信息
-                if (in_other_networks or in_current_network) and stripped:
-                    # 网络名称行（以冒号结尾，不包含其他信息）
-                    if stripped.endswith(':') and not any(key in stripped for key in ['PHY Mode:', 'Channel:', 'Security:', 'Signal']):
-                        # 保存之前的网络
-                        if network_data and 'ssid' in network_data:
-                            network = WiFiNetwork(
-                                ssid=network_data.get('ssid', ''),
-                                bssid=network_data.get('bssid', ''),
-                                rssi=network_data.get('rssi', -100),
-                                channel=network_data.get('channel', 0),
-                                security=network_data.get('security', 'Unknown')
-                            )
-                            networks.append(network)
-
-                        # 开始新网络
-                        network_data = {'ssid': stripped[:-1]}  # 去掉末尾冒号
-                    elif 'Security:' in stripped:
-                        network_data['security'] = stripped.split(':')[-1].strip()
-                    elif 'Signal / Noise:' in stripped:
-                        try:
-                            signal_part = stripped.split(':')[-1].strip()
-                            rssi_str = signal_part.split('/')[0].strip().replace('dBm', '').strip()
-                            network_data['rssi'] = int(rssi_str)
-                        except (ValueError, IndexError):
-                            network_data['rssi'] = -100
-                    elif 'Channel:' in stripped:
-                        try:
-                            channel_part = stripped.split(':')[-1].strip()
-                            channel_str = channel_part.split()[0]
-                            network_data['channel'] = int(channel_str)
-                        except (ValueError, IndexError):
-                            network_data['channel'] = 0
-
-                # 结束解析（遇到空行或新的主要部分）
-                if not stripped and (in_other_networks or in_current_network):
-                    if network_data and 'ssid' in network_data:
-                        # 如果没有安全信息，可能已经到了下一个网络或部分结束
-                        pass
+                # SSID 行：缩进等于 ssid_indent，且以 : 结尾，且冒号前无空格分隔的 key-value
+                if indent == ssid_indent and stripped.endswith(':'):
+                    # 保存之前的网络
+                    self._save_network(network_data, networks)
+                    network_data = {'ssid': stripped[:-1]}
+                # 属性行：缩进比 SSID 深
+                elif ssid_indent != -1 and indent > ssid_indent:
+                    self._parse_network_field(stripped, network_data)
 
             # 保存最后一个网络
-            if network_data and 'ssid' in network_data:
-                network = WiFiNetwork(
-                    ssid=network_data.get('ssid', ''),
-                    bssid=network_data.get('bssid', ''),
-                    rssi=network_data.get('rssi', -100),
-                    channel=network_data.get('channel', 0),
-                    security=network_data.get('security', 'Unknown')
-                )
-                networks.append(network)
-
-            self._scan_results = networks
-            self._status = MacOSWiFiStatus.DISCONNECTED
+            self._save_network(network_data, networks)
 
         except subprocess.TimeoutExpired:
             print("扫描超时")
         except Exception as e:
             print(f"扫描错误: {e}")
 
+        return networks
+
+    @staticmethod
+    def _parse_network_field(line: str, data: dict) -> None:
+        """解析单个网络属性行"""
+        if 'Security:' in line:
+            data['security'] = line.split('Security:')[-1].strip()
+        elif 'Signal / Noise:' in line:
+            try:
+                signal_part = line.split('Signal / Noise:')[-1].strip()
+                rssi_str = signal_part.split('/')[0].strip().replace('dBm', '').strip()
+                data['rssi'] = int(rssi_str)
+            except (ValueError, IndexError):
+                data['rssi'] = -100
+        elif 'Channel:' in line:
+            try:
+                channel_part = line.split('Channel:')[-1].strip()
+                channel_str = channel_part.split()[0]
+                data['channel'] = int(channel_str)
+            except (ValueError, IndexError):
+                data['channel'] = 0
+
+    @staticmethod
+    def _save_network(data: dict, networks: list) -> None:
+        """将已收集的网络数据保存为 WiFiNetwork 对象"""
+        if data and 'ssid' in data and data['ssid']:
+            networks.append(WiFiNetwork(
+                ssid=data['ssid'],
+                bssid=data.get('bssid', ''),
+                rssi=data.get('rssi', -100),
+                channel=data.get('channel', 0),
+                security=data.get('security', 'Unknown')
+            ))
+
+    def scan_results(self) -> List[WiFiNetwork]:
+        """
+        获取扫描结果。
+        优先使用 CoreWLAN（需要定位服务授权），否则回退到 system_profiler。
+        """
+        # 优先尝试 CoreWLAN（完整且准确）
+        networks = self._scan_with_corewlan()
+        if networks is not None:
+            self._scan_results = networks
+            self._status = MacOSWiFiStatus.DISCONNECTED
+            return networks
+
+        # 回退到 system_profiler（CoreWLAN 不可用或未授权定位服务）
+        networks = self._scan_with_system_profiler()
+        self._scan_results = networks
+        self._status = MacOSWiFiStatus.DISCONNECTED
         return networks
 
     def disconnect(self) -> bool:
